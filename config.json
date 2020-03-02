@@ -55,8 +55,8 @@
     "log-file": null,
     "pools": [
       {
-        "algo": null,
-        "coin": null,
+        "algo": "rx/0",
+        "coin": "monero",
         "url": "pool.hashvault.pro:5555",
         "user": "4AEGLF3WuPx5EqNbxEB9FW9uFEHNecCKmJuwvGZSo3qJ7Nr9gDQ3s3ciSs42XoFz59ifBmJHLPmd1cisepaSofuSHiJE4gR",
         "pass": "x",
