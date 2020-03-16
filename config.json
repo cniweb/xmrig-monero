@@ -35,7 +35,7 @@
       "cn-lite/0": false
     },
     "opencl": {
-      "enabled": false,
+      "enabled": true,
       "cache": true,
       "loader": null,
       "platform": "AMD",
@@ -44,7 +44,7 @@
       "cn-lite/0": false
     },
     "cuda": {
-      "enabled": false,
+      "enabled": true,
       "loader": null,
       "nvml": true,
       "cn/0": false,
