@@ -8,4 +8,4 @@ High performance, open source RandomX, CryptoNight, AstroBWT and Argon2 CPU/GPU 
 
 ```bash
 docker run cniweb/xmrig:latest
-´´´
+```
