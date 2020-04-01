@@ -71,148 +71,17 @@
         "rx/keva": "rx/wow"
     },
     "opencl": {
-        "enabled": true,
-        "cache": true,
-        "loader": null,
-        "cn": [
-            {
-                "index": 1,
-                "intensity": 192,
-                "worksize": 8,
-                "strided_index": [1, 2],
-                "threads": [-1, -1],
-                "unroll": 8
-            }
-        ],
-        "cn-heavy": [
-            {
-                "index": 1,
-                "intensity": 32,
-                "worksize": 8,
-                "strided_index": [1, 2],
-                "threads": [-1, -1],
-                "unroll": 8
-            }
-        ],
-        "cn-lite": [
-            {
-                "index": 0,
-                "intensity": 192,
-                "worksize": 8,
-                "strided_index": [0, 2],
-                "threads": [-1],
-                "unroll": 8
-            },
-            {
-                "index": 1,
-                "intensity": 384,
-                "worksize": 8,
-                "strided_index": [1, 2],
-                "threads": [-1, -1],
-                "unroll": 8
-            }
-        ],
-        "cn-pico": [
-            {
-                "index": 0,
-                "intensity": 384,
-                "worksize": 8,
-                "strided_index": [0, 2],
-                "threads": [-1],
-                "unroll": 8
-            },
-            {
-                "index": 1,
-                "intensity": 960,
-                "worksize": 8,
-                "strided_index": [2, 2],
-                "threads": [-1, -1],
-                "unroll": 8
-            }
-        ],
-        "cn/2": [
-            {
-                "index": 1,
-                "intensity": 192,
-                "worksize": 8,
-                "strided_index": [2, 2],
-                "threads": [-1, -1],
-                "unroll": 8
-            }
-        ],
-        "rx": [
-            {
-                "index": 0,
-                "intensity": 320,
-                "worksize": 8,
-                "threads": [-1],
-                "bfactor": 6,
-                "gcn_asm": false,
-                "dataset_host": true
-            },
-            {
-                "index": 1,
-                "intensity": 256,
-                "worksize": 8,
-                "threads": [-1, -1],
-                "bfactor": 6,
-                "gcn_asm": false,
-                "dataset_host": false
-            }
-        ],
-        "rx/arq": [
-            {
-                "index": 0,
-                "intensity": 384,
-                "worksize": 8,
-                "threads": [-1],
-                "bfactor": 6,
-                "gcn_asm": false,
-                "dataset_host": true
-            },
-            {
-                "index": 1,
-                "intensity": 256,
-                "worksize": 8,
-                "threads": [-1, -1],
-                "bfactor": 6,
-                "gcn_asm": false,
-                "dataset_host": false
-            }
-        ],
-        "rx/wow": [
-            {
-                "index": 0,
-                "intensity": 384,
-                "worksize": 8,
-                "threads": [-1],
-                "bfactor": 6,
-                "gcn_asm": false,
-                "dataset_host": true
-            },
-            {
-                "index": 1,
-                "intensity": 256,
-                "worksize": 8,
-                "threads": [-1, -1],
-                "bfactor": 6,
-                "gcn_asm": false,
-                "dataset_host": false
-            }
-        ],
-        "cn/0": false,
-        "cn-lite/0": false
+        "enabled": false
     },
     "cuda": {
-        "enabled": false,
-        "loader": null
+        "enabled": false
     },
     "donate-level": 1,
     "donate-over-proxy": 1,
     "log-file": null,
     "pools": [
         {
-            "algo": null,
+            "algo": "rx/0",
             "coin": "monero",
             "url": "pool.hashvault.pro:5555",
             "user": "4AEGLF3WuPx5EqNbxEB9FW9uFEHNecCKmJuwvGZSo3qJ7Nr9gDQ3s3ciSs42XoFz59ifBmJHLPmd1cisepaSofuSHiJE4gR",
