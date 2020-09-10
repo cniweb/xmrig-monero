@@ -8,7 +8,7 @@
     "host": "127.0.0.1",
     "port": 80,
     "access-token": null,
-    "restricted": true
+    "restricted": false
   },
   "autosave": true,
   "version": 1,
@@ -53,7 +53,7 @@
     {
       "algo": null,
       "coin": null,
-      "url": "pool.hashvault.pro:80",
+      "url": "pool.hashvault.pro:443",
       "user": "4AEGLF3WuPx5EqNbxEB9FW9uFEHNecCKmJuwvGZSo3qJ7Nr9gDQ3s3ciSs42XoFz59ifBmJHLPmd1cisepaSofuSHiJE4gR",
       "pass": "docker",
       "rig-id": null,
