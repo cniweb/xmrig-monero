@@ -4,16 +4,16 @@
       "worker-id": null
     },
     "http": {
-      "enabled": false,
+      "enabled": true,
       "host": "127.0.0.1",
-      "port": 0,
+      "port": 80,
       "access-token": null,
       "restricted": true
     },
     "autosave": true,
     "version": 1,
     "background": false,
-    "colors": true,
+    "colors": false,
     "randomx": {
       "init": -1,
       "numa": true
