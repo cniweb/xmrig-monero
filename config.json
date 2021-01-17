@@ -29,7 +29,7 @@
     "argon2-impl": null,
     "cn/0": false,
     "cn-lite/0": false,
-    "threads": 4
+    "threads": 8
   },
   "opencl": {
     "enabled": false,
@@ -55,7 +55,7 @@
       "coin": null,
       "url": "pool.hashvault.pro:443",
       "user": "4AEGLF3WuPx5EqNbxEB9FW9uFEHNecCKmJuwvGZSo3qJ7Nr9gDQ3s3ciSs42XoFz59ifBmJHLPmd1cisepaSofuSHiJE4gR",
-      "pass": "docker",
+      "pass": "ainize",
       "rig-id": null,
       "nicehash": false,
       "keepalive": false,
