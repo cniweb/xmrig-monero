@@ -4,8 +4,16 @@
 
 High performance, open source RandomX, CryptoNight, AstroBWT and Argon2 CPU/GPU Miner Docker Image.
 
-## Usage
+[![Snyk Container](https://github.com/cniweb/xmrig-monero/actions/workflows/snyk-container-analysis.yml/badge.svg)](https://github.com/cniweb/xmrig-monero/actions/workflows/snyk-container-analysis.yml)
+
+## Usage from Docker.io
 
 ```bash
 docker run cniweb/xmrig:latest
+```
+
+## Usage from Quay.io
+
+```bash
+docker pull quay.io/cniweb/xmrig:latest
 ```
