@@ -1,9 +1,11 @@
 #!/bin/bash
-docker build . --tag cniweb/xmrig:6.12.1
-docker tag cniweb/xmrig:6.12.1 cniweb/xmrig:latest
-docker tag cniweb/xmrig:6.12.1 ghcr.io/cniweb/xmrig:6.12.1
-docker tag cniweb/xmrig:6.12.1 ghcr.io/cniweb/xmrig:latest
-#docker push cniweb/xmrig:6.12.1
-#docker push cniweb/xmrig:latest
-docker push ghcr.io/cniweb/xmrig:6.12.1
-docker push ghcr.io/cniweb/xmrig:latest
+version="6.12.2"
+image="xmrig"
+docker build . --tag docker.io/cniweb/$image:$version
+docker tag docker.io/cniweb/$image:$version ghcr.io/cniweb/$image:$version
+docker tag docker.io/cniweb/$image:$version ghcr.io/cniweb/$image:latest
+docker tag docker.io/cniweb/$image:$version docker.io/cniweb/$image:latest
+docker push ghcr.io/cniweb/$image:$version
+docker push ghcr.io/cniweb/$image:latest
+docker push docker.io/cniweb/$image:$version
+docker push docker.io/cniweb/$image:latest
