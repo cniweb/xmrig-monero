@@ -28,8 +28,7 @@
     "asm": true,
     "argon2-impl": null,
     "cn/0": false,
-    "cn-lite/0": false,
-    "threads": 4
+    "cn-lite/0": false
   },
   "opencl": {
     "enabled": false,
