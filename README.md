@@ -6,6 +6,14 @@ High performance, open source RandomX, CryptoNight, AstroBWT and Argon2 CPU/GPU 
 
 [![Snyk Container](https://github.com/cniweb/xmrig-monero/actions/workflows/snyk-container-analysis.yml/badge.svg)](https://github.com/cniweb/xmrig-monero/actions/workflows/snyk-container-analysis.yml)
 
+## Usage from ghcr.io
+
+```bash
+docker run ghcr.io/cniweb/xmrig:latest
+```
+
+<https://github.com/cniweb/xmrig-monero/pkgs/container/xmrig>
+
 ## Usage from Docker.io
 
 ```bash
