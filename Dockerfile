@@ -8,9 +8,9 @@ RUN   apk --no-cache upgrade && \
         build-base \
         openssl-dev \
         libmicrohttpd-dev && \
-      git clone https://github.com/xmrig/xmrig && \
+      git clone https://github.com/xmrig/xmrig.git && \
       cd xmrig && \
-      git checkout v6.12.2 && \
+      git checkout v6.18.0 && \
       mkdir build && \
       cmake -DWITH_HWLOC=OFF -DCMAKE_BUILD_TYPE=Release . && \
       make && \
