@@ -1,5 +1,5 @@
 #!/bin/bash
-version="6.18.1"
+version="6.19.0"
 image="xmrig"
 docker build . --tag docker.io/cniweb/$image:$version
 docker tag docker.io/cniweb/$image:$version docker.io/cniweb/$image:latest

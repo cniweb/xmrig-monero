@@ -10,7 +10,7 @@ RUN   apk --no-cache upgrade && \
         libmicrohttpd-dev && \
       git clone https://github.com/xmrig/xmrig.git && \
       cd xmrig && \
-      git checkout v6.18.1 && \
+      git checkout v6.19.0 && \
       mkdir build && \
       cmake -DWITH_HWLOC=OFF -DCMAKE_BUILD_TYPE=Release . && \
       make && \
