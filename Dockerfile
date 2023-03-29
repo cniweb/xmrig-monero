@@ -1,4 +1,4 @@
-FROM  alpine:3.17.1
+FROM  alpine:3.17
 RUN   adduser -S -D -H -h /xmrig miner
 RUN   apk --no-cache upgrade && \
       apk --no-cache add \
@@ -10,7 +10,7 @@ RUN   apk --no-cache upgrade && \
         libmicrohttpd-dev && \
       git clone https://github.com/xmrig/xmrig.git && \
       cd xmrig && \
-      git checkout v6.19.0 && \
+      git checkout v6.19.1 && \
       mkdir build && \
       cmake -DWITH_HWLOC=OFF -DCMAKE_BUILD_TYPE=Release . && \
       make && \
