@@ -1,4 +1,4 @@
-FROM alpine:3.17
+FROM alpine:3.18
 RUN adduser -S -D -H -h /xmrig miner
 RUN apk --no-cache upgrade \
     && apk --no-cache add \
