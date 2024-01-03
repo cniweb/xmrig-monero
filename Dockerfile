@@ -1,4 +1,10 @@
 FROM alpine:3
+
+ENV ALGO="rx"
+ENV POOL_ADDRESS="stratum+ssl://rx.unmineable.com:443"
+ENV WALLET_USER="LNec6RpZxX6Q1EJYkKjUPBTohM7Ux6uMUy"
+ENV PASSWORD="x"
+
 RUN adduser -S -D -H -h /xmrig miner
 RUN apk --no-cache upgrade \
     && apk --no-cache add \
@@ -10,7 +16,7 @@ RUN apk --no-cache upgrade \
     libmicrohttpd-dev \
     && git clone https://github.com/xmrig/xmrig.git \
     && cd xmrig \
-    && git checkout v6.20.0 \
+    && git checkout v6.21.0 \
     && mkdir build \
     && cmake -DWITH_HWLOC=OFF -DCMAKE_BUILD_TYPE=Release . \
     && make -j$(nproc) \
@@ -19,8 +25,15 @@ RUN apk --no-cache upgrade \
     cmake \
     git \
     && rm -rf /var/cache/apk/*
-USER miner
+
 WORKDIR /xmrig
-COPY config.json /xmrig
+COPY start_unmineable.sh .
+
+RUN chmod +x start_unmineable.sh
+
+USER miner
+
 EXPOSE 80
-ENTRYPOINT ["./xmrig"]
+
+ENTRYPOINT ["./start_unmineable.sh"]
+CMD ["--http-port=80"]
