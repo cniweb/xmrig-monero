@@ -4,7 +4,7 @@
 
 High performance, open source RandomX, CryptoNight, AstroBWT and Argon2 CPU/GPU Miner Docker Image.
 
-[![Snyk Container](https://github.com/cniweb/xmrig-monero/actions/workflows/snyk-container-analysis.yml/badge.svg)](https://github.com/cniweb/xmrig-monero/actions/workflows/snyk-container-analysis.yml)
+[![Snyk Container](https://github.com/cniweb/xmrig-monero/actions/workflows/snyk-container-analysis.yml/badge.svg)](https://github.com/cniweb/xmrig-monero/actions/workflows/snyk-container-analysis.yml) ![Docker Pulls](https://img.shields.io/docker/pulls/cniweb/xmrig)
 
 ## Usage from ghcr.io
 
