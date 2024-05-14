@@ -16,7 +16,7 @@ RUN apk --no-cache upgrade \
     libmicrohttpd-dev \
     && git clone https://github.com/xmrig/xmrig.git \
     && cd xmrig \
-    && git checkout v6.21.0 \
+    && git checkout v6.21.3 \
     && mkdir build \
     && cmake -DWITH_HWLOC=OFF -DCMAKE_BUILD_TYPE=Release . \
     && make -j$(nproc) \
