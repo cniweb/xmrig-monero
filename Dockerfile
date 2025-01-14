@@ -1,5 +1,6 @@
 FROM alpine:3
 
+ARG VERSION_TAG=v6.22.2
 ENV ALGO="rx"
 ENV POOL_ADDRESS="stratum+ssl://rx.unmineable.com:443"
 ENV WALLET_USER="LNec6RpZxX6Q1EJYkKjUPBTohM7Ux6uMUy"
@@ -8,15 +9,15 @@ ENV PASSWORD="x"
 RUN adduser -S -D -H -h /xmrig miner
 RUN apk --no-cache upgrade \
     && apk --no-cache add \
-    git \
-    cmake \
-    libuv-dev \
     build-base \
-    openssl-dev \
+    cmake \
+    git \
     libmicrohttpd-dev \
+    libuv-dev \
+    openssl-dev \
     && git clone https://github.com/xmrig/xmrig.git \
     && cd xmrig \
-    && git checkout v6.21.3 \
+    && git checkout "$VERSION_TAG" \
     && mkdir build \
     && cmake -DWITH_HWLOC=OFF -DCMAKE_BUILD_TYPE=Release . \
     && make -j$(nproc) \
