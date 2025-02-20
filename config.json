@@ -1,75 +1,35 @@
 {
   "api": {
-    "id": null,
-    "worker-id": null
+      "worker-id": "docker"
   },
   "http": {
-    "enabled": true,
-    "host": "0.0.0.0",
-    "port": 80,
-    "access-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-    "restricted": true
+      "enabled": true,
+      "host": "0.0.0.0",
+      "port": 80,
+      "access-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+      "restricted": true
   },
   "autosave": true,
-  "version": 1,
-  "background": false,
   "colors": false,
-  "randomx": {
-    "init": -1,
-    "numa": true
-  },
   "cpu": {
     "enabled": true,
     "huge-pages": true,
-    "hw-aes": null,
-    "priority": null,
-    "memory-pool": false,
-    "max-threads-hint": 100,
-    "asm": true,
-    "argon2-impl": null,
-    "cn/0": false,
-    "cn-lite/0": false
-  },
-  "opencl": {
-    "enabled": false,
-    "cache": true,
-    "loader": null,
-    "platform": "AMD",
-    "cn/0": false,
-    "cn-lite/0": false
-  },
-  "cuda": {
-    "enabled": false,
-    "loader": null,
-    "nvml": true,
-    "cn/0": false,
-    "cn-lite/0": false
+    "hw-aes": true,
+    "memory-pool": true,
+    "max-threads-hint": 100
   },
   "donate-level": 1,
-  "donate-over-proxy": 1,
-  "log-file": null,
+  "opencl": false,
+  "cuda": false,
   "pools": [
-    {
-      "algo": null,
-      "coin": null,
-      "url": "pool.hashvault.pro:443",
-      "user": "4AEGLF3WuPx5EqNbxEB9FW9uFEHNecCKmJuwvGZSo3qJ7Nr9gDQ3s3ciSs42XoFz59ifBmJHLPmd1cisepaSofuSHiJE4gR",
-      "pass": "docker",
-      "rig-id": null,
-      "nicehash": false,
-      "keepalive": false,
-      "enabled": true,
-      "tls": true,
-      "tls-fingerprint": "420c7850e09b7c0bdcf748a7da9eb3647daf8515718f36d9ccfdd6b9ff834b14",
-      "daemon": false,
-      "self-select": null
-    }
-  ],
-  "print-time": 60,
-  "health-print-time": 60,
-  "retries": 5,
-  "retry-pause": 5,
-  "syslog": false,
-  "user-agent": null,
-  "watch": true
+      {
+          "algo": "gr",
+          "url": "stratum+tcp://ghostrider.mine.zergpool.com:5354",
+          "user": "LNec6RpZxX6Q1EJYkKjUPBTohM7Ux6uMUy",
+          "pass": "c=LTC,id=docker",
+          "tls": false,
+          "keepalive": true,
+          "nicehash": false
+      }
+  ]
 }

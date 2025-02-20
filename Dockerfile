@@ -1,40 +1,30 @@
-FROM alpine:3
+FROM debian:stable-slim
 
-ARG VERSION_TAG=v6.22.2
-ENV ALGO="rx"
-ENV POOL_ADDRESS="stratum+ssl://rx.unmineable.com:443"
+ARG VERSION_TAG=6.22.2
+ENV ALGO="gr"
+ENV POOL_ADDRESS="stratum+tcp://ghostrider.mine.zergpool.com:5354"
 ENV WALLET_USER="LNec6RpZxX6Q1EJYkKjUPBTohM7Ux6uMUy"
-ENV PASSWORD="x"
+ENV PASSWORD="c=LTC"
 
-RUN adduser -S -D -H -h /xmrig miner
-RUN apk --no-cache upgrade \
-    && apk --no-cache add \
-    build-base \
-    cmake \
-    git \
-    libmicrohttpd-dev \
-    libuv-dev \
-    openssl-dev \
-    && git clone https://github.com/xmrig/xmrig.git \
-    && cd xmrig \
-    && git checkout "$VERSION_TAG" \
-    && mkdir build \
-    && cmake -DWITH_HWLOC=OFF -DCMAKE_BUILD_TYPE=Release . \
-    && make -j$(nproc) \
-    && apk del \
-    build-base \
-    cmake \
-    git \
-    && rm -rf /var/cache/apk/*
+RUN apt-get -y update \
+    && apt-get -y upgrade \
+    && apt-get -y install curl wget \
+    && cd /opt \
+    && curl -L https://github.com/xmrig/xmrig/releases/download/v${VERSION_TAG}/xmrig-${VERSION_TAG}-linux-static-x64.tar.gz -o xmrig.tar.gz \
+    && tar xf xmrig.tar.gz \
+    && ls -lisah \
+    && rm -rf xmrig.tar.gz \
+    && mv /opt/xmrig-${VERSION_TAG}/ /opt/xmrig/ \
+    && apt-get -y autoremove --purge \
+    && apt-get -y clean \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
-WORKDIR /xmrig
-COPY start_unmineable.sh .
+WORKDIR /opt/xmrig/
+COPY start_zergpool.sh .
+COPY config.json .
 
-RUN chmod +x start_unmineable.sh
-
-USER miner
+RUN chmod +x start_zergpool.sh
 
 EXPOSE 80
 
-ENTRYPOINT ["./start_unmineable.sh"]
-CMD ["--http-port=80"]
+ENTRYPOINT ["./xmrig"]

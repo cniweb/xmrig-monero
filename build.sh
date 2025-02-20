@@ -5,7 +5,7 @@ version="6.22.2"
 registries=("docker.io" "ghcr.io" "quay.io")
 
 # Build the image
-docker build . --build-arg VERSION_TAG=v$version --tag ${registries[0]}/cniweb/$image:$version
+docker build . --build-arg VERSION_TAG=$version --tag ${registries[0]}/cniweb/$image:$version
 
 # Check if the command was successful
 if [ $? -ne 0 ]; then
