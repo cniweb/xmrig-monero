@@ -1,7 +1,7 @@
 #!/bin/bash
 # Define image name, version and registries
 image="xmrig"
-version="6.22.2"
+version="6.24.0"
 registries=("docker.io" "ghcr.io" "quay.io")
 
 # Build the image
