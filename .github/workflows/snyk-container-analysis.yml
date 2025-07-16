@@ -42,8 +42,11 @@ jobs:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         image: cniweb/xmrig
-        args: --file=Dockerfile --sarif-file-output=snyk.sarif
+        args: --file=Dockerfile
+    - name: Patch SARIF file (replace null severity)
+      run: |
+        sed -i 's/"securitySeverityLevel": null/"securitySeverityLevel": "medium"/g' result.sarif
     - name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v3
       with:
-        sarif_file: snyk.sarif
+        sarif_file: result.sarif
