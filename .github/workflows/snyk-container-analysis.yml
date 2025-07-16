@@ -44,13 +44,7 @@ jobs:
         image: cniweb/xmrig
         args: --file=Dockerfile
     - name: Patch SARIF file (replace null severity values)
-      run: |
-        sed -i \
-          -e 's/"securitySeverityLevel": null/"securitySeverityLevel": "medium"/g' \
-          -e 's/"security-severity": null/"security-severity": "medium"/g' \
-          -e 's/"severity": null/"severity": "medium"/g' \
-          -e 's/"level": null/"level": "medium"/g' \
-          snyk.sarif
+      run: sed -i 's/"security-severity": "null"/"security-severity": "0"/g' snyk.sarif
     - name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v3
       with:
