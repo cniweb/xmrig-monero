@@ -39,33 +39,45 @@ jobs:
       - name: Run build script (builds Docker image)
         run: ./build.sh build-only
 
-      - name: Tag Docker image with latest and commit SHA
+      - name: Extract version from build.sh
+        id: get_version
         run: |
-          # The build.sh creates docker.io/cniweb/xmrig:6.22.2
-          # We need to tag it for latest and commit SHA across all registries
+          VERSION=$(grep '^version=' build.sh | cut -d'"' -f2)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
+      - name: Tag Docker image with latest, version, and commit SHA
+        run: |
+          # The build.sh creates docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}
+          # We need to tag it for latest, version, and commit SHA across all registries
           
           # Tag for Docker Hub
-          docker tag docker.io/cniweb/xmrig:6.22.2 docker.io/cniweb/xmrig:latest
-          docker tag docker.io/cniweb/xmrig:6.22.2 docker.io/cniweb/xmrig:${{ github.sha }}
+          docker tag docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }} docker.io/cniweb/xmrig:latest
+          docker tag docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }} docker.io/cniweb/xmrig:${{ github.sha }}
           
           # Tag for GitHub Container Registry
-          docker tag docker.io/cniweb/xmrig:6.22.2 ghcr.io/cniweb/xmrig:latest
-          docker tag docker.io/cniweb/xmrig:6.22.2 ghcr.io/cniweb/xmrig:${{ github.sha }}
+          docker tag docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }} ghcr.io/cniweb/xmrig:latest
+          docker tag docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }} ghcr.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}
+          docker tag docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }} ghcr.io/cniweb/xmrig:${{ github.sha }}
           
           # Tag for Quay.io
-          docker tag docker.io/cniweb/xmrig:6.22.2 quay.io/cniweb/xmrig:latest
-          docker tag docker.io/cniweb/xmrig:6.22.2 quay.io/cniweb/xmrig:${{ github.sha }}
+          docker tag docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }} quay.io/cniweb/xmrig:latest
+          docker tag docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }} quay.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}
+          docker tag docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }} quay.io/cniweb/xmrig:${{ github.sha }}
 
       - name: Push Docker images to all registries
         run: |
           # Push to Docker Hub
           docker push docker.io/cniweb/xmrig:latest
+          docker push docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}
           docker push docker.io/cniweb/xmrig:${{ github.sha }}
           
           # Push to GitHub Container Registry
           docker push ghcr.io/cniweb/xmrig:latest
+          docker push ghcr.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}
           docker push ghcr.io/cniweb/xmrig:${{ github.sha }}
           
           # Push to Quay.io
           docker push quay.io/cniweb/xmrig:latest
+          docker push quay.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}
           docker push quay.io/cniweb/xmrig:${{ github.sha }}
