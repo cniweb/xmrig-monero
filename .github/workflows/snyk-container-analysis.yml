@@ -45,9 +45,19 @@ jobs:
         args: --file=Dockerfile
     - name: Patch SARIF file (replace null severity values)
       run: |
-        sed -i \
-          -e 's/"security-severity": null/"security-severity": 0.0/g' \
-          snyk.sarif
+        # Use jq for robust JSON processing to handle all whitespace variations
+        jq 'walk(if type == "object" and has("security-severity") and (.["security-severity"] == null) then .["security-severity"] = 0.0 else . end)' snyk.sarif > snyk.sarif.tmp && mv snyk.sarif.tmp snyk.sarif
+    - name: Validate SARIF file
+      run: |
+        # Validate that the SARIF file is valid JSON and doesn't contain null security-severity values
+        jq '.' snyk.sarif > /dev/null && echo "SARIF file is valid JSON"
+        null_count=$(jq '[.. | objects | select(has("security-severity") and (.["security-severity"] == null))] | length' snyk.sarif)
+        if [ "$null_count" -gt 0 ]; then
+          echo "Error: Found $null_count rules with null security-severity values"
+          exit 1
+        else
+          echo "No null security-severity values found"
+        fi
     - name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v3
       with:
