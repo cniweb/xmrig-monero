@@ -55,33 +55,85 @@ jobs:
           exit 1
         fi
         
-        # Look for security-severity fields in the file
-        echo "=== Searching for security-severity patterns ==="
+        # Show a sample of the SARIF structure to understand the format
+        echo "=== SARIF structure sample ==="
+        jq '.runs[0].tool.driver.rules[0:2] // empty' snyk.sarif 2>/dev/null || echo "No rules found in standard location"
+        
+        # Look for ALL security-severity fields in the file (both null and non-null)
+        echo "=== All security-severity patterns ==="
         grep -n "security-severity" snyk.sarif || echo "No security-severity found with grep"
         
-        # Use jq to find all security-severity occurrences
-        echo "=== Finding security-severity with jq ==="
-        jq -r 'paths(scalars) as $p | select(getpath($p) == null and ($p | last) == "security-severity") | "Path: " + ($p | join(".")) + " = null"' snyk.sarif || echo "No null security-severity found with jq paths"
+        # Use jq to find ALL security-severity occurrences and their values
+        echo "=== Finding ALL security-severity with jq ==="
+        jq -r 'paths(scalars) as $p | select(($p | last) == "security-severity") | "Path: " + ($p | join(".")) + " = " + (getpath($p) | tostring)' snyk.sarif || echo "No security-severity found with jq paths"
+        
+        # Specifically look for null values
+        echo "=== Finding null security-severity with jq ==="
+        jq -r 'paths(scalars) as $p | select(getpath($p) == null and ($p | last) == "security-severity") | "NULL Path: " + ($p | join("."))' snyk.sarif || echo "No null security-severity found"
         
     - name: Patch SARIF file (replace null severity values)
       run: |
         echo "=== Patching SARIF file ==="
-        # More comprehensive fix targeting specific SARIF structures
+        # Create a comprehensive fix that handles all possible locations
+        # First, let's apply a very aggressive approach using multiple strategies
+        
+        # Strategy 1: Text-based replacement for any JSON formatting
+        echo "=== Applying text-based replacement ==="
+        sed -i -E 's/"security-severity"[[:space:]]*:[[:space:]]*null/"security-severity": 0.0/g' snyk.sarif
+        
+        # Strategy 2: Comprehensive jq-based replacement
+        echo "=== Applying jq-based replacement ==="
         jq '
-          # Fix security-severity in tool driver rules
+          # Use recursive descent to replace ALL null security-severity values
+          def fix_security_severity:
+            if type == "object" then
+              if has("security-severity") and (.["security-severity"] == null) then
+                .["security-severity"] = 0.0
+              else . end |
+              with_entries(.value |= fix_security_severity)
+            elif type == "array" then
+              map(fix_security_severity)
+            else
+              .
+            end;
+          
+          fix_security_severity
+        ' snyk.sarif > snyk.sarif.tmp && mv snyk.sarif.tmp snyk.sarif
+        
+        # Strategy 3: Specific targeting of known SARIF structures
+        echo "=== Applying structure-specific fixes ==="
+        jq '
+          # Fix in tool driver rules (most common location)
           if .runs then
-            .runs = [.runs[] | 
+            .runs |= map(
               if .tool and .tool.driver and .tool.driver.rules then
-                .tool.driver.rules = [.tool.driver.rules[] |
+                .tool.driver.rules |= map(
                   if .properties and .properties["security-severity"] == null then
                     .properties["security-severity"] = 0.0
+                  else . end |
+                  if has("security-severity") and (.["security-severity"] == null) then
+                    .["security-severity"] = 0.0
                   else . end
-                ]
+                )
               else . end
-            ]
+            )
           else . end |
-          # Also fix any other security-severity occurrences using walk
-          walk(if type == "object" and has("security-severity") and (.["security-severity"] == null) then .["security-severity"] = 0.0 else . end)
+          
+          # Fix in results section if it exists
+          if .runs then
+            .runs |= map(
+              if .results then
+                .results |= map(
+                  if .properties and .properties["security-severity"] == null then
+                    .properties["security-severity"] = 0.0
+                  else . end |
+                  if has("security-severity") and (.["security-severity"] == null) then
+                    .["security-severity"] = 0.0
+                  else . end
+                )
+              else . end
+            )
+          else . end
         ' snyk.sarif > snyk.sarif.tmp && mv snyk.sarif.tmp snyk.sarif
         
     - name: Debug SARIF structure (after patching)
@@ -91,26 +143,49 @@ jobs:
         echo "=== Searching for remaining security-severity patterns ==="
         grep -n "security-severity" snyk.sarif | head -10 || echo "No security-severity found with grep"
         
-        # Use jq to find any remaining null security-severity occurrences
+        # Show actual values now present
+        echo "=== Finding ALL security-severity values after patching ==="
+        jq -r 'paths(scalars) as $p | select(($p | last) == "security-severity") | "Path: " + ($p | join(".")) + " = " + (getpath($p) | tostring)' snyk.sarif || echo "No security-severity found"
+        
+        # Specifically check for any remaining nulls
         echo "=== Finding remaining security-severity nulls with jq ==="
-        jq -r 'paths(scalars) as $p | select(getpath($p) == null and ($p | last) == "security-severity") | "Path: " + ($p | join(".")) + " = null"' snyk.sarif || echo "No null security-severity found"
+        jq -r 'paths(scalars) as $p | select(getpath($p) == null and ($p | last) == "security-severity") | "REMAINING NULL Path: " + ($p | join("."))' snyk.sarif || echo "No null security-severity found"
         
     - name: Validate SARIF file
       run: |
         echo "=== Final validation ==="
-        # Validate that the SARIF file is valid JSON and doesn't contain null security-severity values
-        jq '.' snyk.sarif > /dev/null && echo "SARIF file is valid JSON"
+        # Validate that the SARIF file is valid JSON
+        jq '.' snyk.sarif > /dev/null && echo "SARIF file is valid JSON" || { echo "ERROR: SARIF file is not valid JSON"; exit 1; }
         
-        # Count null security-severity values
+        # Count null security-severity values using multiple methods
         null_count=$(jq '[.. | objects | select(has("security-severity") and (.["security-severity"] == null))] | length' snyk.sarif)
         if [ "$null_count" -gt 0 ]; then
-          echo "Error: Found $null_count rules with null security-severity values"
+          echo "ERROR: Found $null_count objects with null security-severity values"
           # Show the problematic entries
           jq '[.. | objects | select(has("security-severity") and (.["security-severity"] == null))]' snyk.sarif
           exit 1
-        else
-          echo "SUCCESS: No null security-severity values found"
         fi
+        
+        # Double-check with text search for any remaining "null" after "security-severity"
+        if grep -q '"security-severity"[[:space:]]*:[[:space:]]*null' snyk.sarif; then
+          echo "ERROR: Found remaining null security-severity in text search"
+          grep -n '"security-severity"[[:space:]]*:[[:space:]]*null' snyk.sarif
+          exit 1
+        fi
+        
+        # Final comprehensive check - look for the word "null" anywhere near security-severity
+        null_text_count=$(grep -c '"security-severity".*null\|null.*"security-severity"' snyk.sarif || echo "0")
+        if [ "$null_text_count" -gt 0 ]; then
+          echo "ERROR: Found $null_text_count lines with security-severity and null"
+          grep -n '"security-severity".*null\|null.*"security-severity"' snyk.sarif
+          exit 1
+        fi
+        
+        echo "SUCCESS: No null security-severity values found by any method"
+        
+        # Show summary of security-severity values found
+        security_severity_count=$(jq '[.. | objects | select(has("security-severity"))] | length' snyk.sarif)
+        echo "INFO: Found $security_severity_count total security-severity properties"
     - name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v3
       with:
