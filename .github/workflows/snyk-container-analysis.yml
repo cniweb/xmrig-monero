@@ -43,20 +43,73 @@ jobs:
       with:
         image: cniweb/xmrig
         args: --file=Dockerfile
+    - name: Debug SARIF structure (before patching)
+      run: |
+        echo "=== SARIF file structure analysis ==="
+        # Check if file exists and show basic info
+        if [ -f snyk.sarif ]; then
+          echo "SARIF file size: $(wc -c < snyk.sarif) bytes"
+          echo "SARIF file lines: $(wc -l < snyk.sarif)"
+        else
+          echo "ERROR: snyk.sarif file not found!"
+          exit 1
+        fi
+        
+        # Look for security-severity fields in the file
+        echo "=== Searching for security-severity patterns ==="
+        grep -n "security-severity" snyk.sarif || echo "No security-severity found with grep"
+        
+        # Use jq to find all security-severity occurrences
+        echo "=== Finding security-severity with jq ==="
+        jq -r 'paths(scalars) as $p | select(getpath($p) == null and ($p | last) == "security-severity") | "Path: " + ($p | join(".")) + " = null"' snyk.sarif || echo "No null security-severity found with jq paths"
+        
     - name: Patch SARIF file (replace null severity values)
       run: |
-        # Use jq for robust JSON processing to handle all whitespace variations
-        jq 'walk(if type == "object" and has("security-severity") and (.["security-severity"] == null) then .["security-severity"] = 0.0 else . end)' snyk.sarif > snyk.sarif.tmp && mv snyk.sarif.tmp snyk.sarif
+        echo "=== Patching SARIF file ==="
+        # More comprehensive fix targeting specific SARIF structures
+        jq '
+          # Fix security-severity in tool driver rules
+          if .runs then
+            .runs = [.runs[] | 
+              if .tool and .tool.driver and .tool.driver.rules then
+                .tool.driver.rules = [.tool.driver.rules[] |
+                  if .properties and .properties["security-severity"] == null then
+                    .properties["security-severity"] = 0.0
+                  else . end
+                ]
+              else . end
+            ]
+          else . end |
+          # Also fix any other security-severity occurrences using walk
+          walk(if type == "object" and has("security-severity") and (.["security-severity"] == null) then .["security-severity"] = 0.0 else . end)
+        ' snyk.sarif > snyk.sarif.tmp && mv snyk.sarif.tmp snyk.sarif
+        
+    - name: Debug SARIF structure (after patching)
+      run: |
+        echo "=== SARIF file after patching ==="
+        # Check for any remaining null security-severity values
+        echo "=== Searching for remaining security-severity patterns ==="
+        grep -n "security-severity" snyk.sarif | head -10 || echo "No security-severity found with grep"
+        
+        # Use jq to find any remaining null security-severity occurrences
+        echo "=== Finding remaining security-severity nulls with jq ==="
+        jq -r 'paths(scalars) as $p | select(getpath($p) == null and ($p | last) == "security-severity") | "Path: " + ($p | join(".")) + " = null"' snyk.sarif || echo "No null security-severity found"
+        
     - name: Validate SARIF file
       run: |
+        echo "=== Final validation ==="
         # Validate that the SARIF file is valid JSON and doesn't contain null security-severity values
         jq '.' snyk.sarif > /dev/null && echo "SARIF file is valid JSON"
+        
+        # Count null security-severity values
         null_count=$(jq '[.. | objects | select(has("security-severity") and (.["security-severity"] == null))] | length' snyk.sarif)
         if [ "$null_count" -gt 0 ]; then
           echo "Error: Found $null_count rules with null security-severity values"
+          # Show the problematic entries
+          jq '[.. | objects | select(has("security-severity") and (.["security-severity"] == null))]' snyk.sarif
           exit 1
         else
-          echo "No null security-severity values found"
+          echo "SUCCESS: No null security-severity values found"
         fi
     - name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v3
