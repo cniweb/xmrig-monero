@@ -15,6 +15,12 @@ fi
 
 echo "Docker build succeeded!"
 
+# Check if we should only build (for CI/CD usage)
+if [ "$1" = "build-only" ]; then
+  echo "Build-only mode: skipping push to registries"
+  exit 0
+fi
+
 # Tag and push the images
 for registry in "${registries[@]}"; do
   docker tag ${registries[0]}/cniweb/$image:$version $registry/cniweb/$image:$version
