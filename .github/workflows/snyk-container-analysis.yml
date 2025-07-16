@@ -45,8 +45,8 @@ jobs:
         args: --file=Dockerfile
     - name: Patch SARIF file (replace null severity)
       run: |
-        sed -i 's/"securitySeverityLevel": null/"securitySeverityLevel": "medium"/g' result.sarif
+        sed -i 's/"securitySeverityLevel": null/"securitySeverityLevel": "medium"/g' snyk.sarif
     - name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v3
       with:
-        sarif_file: result.sarif
+        sarif_file: snyk.sarif
