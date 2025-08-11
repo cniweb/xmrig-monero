@@ -25,7 +25,7 @@
       {
           "algo": "gr",
           "url": "stratum+tcp://ghostrider.mine.zergpool.com:5354",
-          "user": "LNec6RpZxX6Q1EJYkKjUPBTohM7Ux6uMUy",
+          "user": "ltc1q6c4vres6a390mtm4updr5jc6thyv22pu0dupq8",
           "pass": "c=LTC,id=docker",
           "tls": false,
           "keepalive": true,
