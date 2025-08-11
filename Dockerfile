@@ -1,9 +1,9 @@
 FROM debian:stable-slim
 
-ARG VERSION_TAG=6.22.2
+ARG VERSION_TAG=6.24.0
 ENV ALGO="gr"
 ENV POOL_ADDRESS="stratum+tcp://ghostrider.mine.zergpool.com:5354"
-ENV WALLET_USER="LNec6RpZxX6Q1EJYkKjUPBTohM7Ux6uMUy"
+ENV WALLET_USER="ltc1q6c4vres6a390mtm4updr5jc6thyv22pu0dupq8"
 ENV PASSWORD="c=LTC"
 
 RUN apt-get -y update \
