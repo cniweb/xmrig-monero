@@ -1,5 +1,5 @@
 # Use a more recent and secure base image
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 # Set non-root user early
 ARG VERSION_TAG=6.24.0

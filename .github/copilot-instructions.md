@@ -89,7 +89,7 @@ After making any changes to Docker configuration, XMRig settings, or build scrip
 ### Security Features:
 - Non-root execution (uid=1000, user=xmrig)
 - Non-privileged port usage (8080)
-- Minimal base image (debian:bookworm-slim)
+- Minimal base image (debian:trixie-slim)
 - No hardcoded secrets in environment variables
 - Comprehensive security validation via security-check.sh
 
