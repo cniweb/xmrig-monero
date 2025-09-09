@@ -1,0 +1,65 @@
+# Multi-stage build for even better security
+FROM debian:bookworm-slim AS builder
+
+ARG VERSION_TAG=6.24.0
+
+# Install build dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        wget \
+        gnupg \
+    && update-ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download and verify XMRig
+WORKDIR /tmp
+RUN wget --no-check-certificate --tries=3 --timeout=30 \
+        "https://github.com/xmrig/xmrig/releases/download/v${VERSION_TAG}/xmrig-${VERSION_TAG}-linux-static-x64.tar.gz" \
+        -O xmrig.tar.gz \
+    && tar xf xmrig.tar.gz \
+    && mv xmrig-${VERSION_TAG}/xmrig /usr/local/bin/xmrig \
+    && chmod +x /usr/local/bin/xmrig
+
+# Final stage with minimal runtime image
+FROM debian:bookworm-slim
+
+# Create non-root user
+ARG XMRIG_USER=xmrig
+ARG XMRIG_UID=1000
+ARG XMRIG_GID=1000
+
+RUN groupadd -g ${XMRIG_GID} ${XMRIG_USER} \
+    && useradd -u ${XMRIG_UID} -g ${XMRIG_GID} -m -s /bin/bash ${XMRIG_USER}
+
+# Copy only the necessary binary from builder stage
+COPY --from=builder /usr/local/bin/xmrig /usr/local/bin/xmrig
+
+# Set up working directory and copy configuration
+USER ${XMRIG_USER}
+WORKDIR /home/${XMRIG_USER}
+
+# Copy configuration files with proper ownership
+COPY --chown=${XMRIG_USER}:${XMRIG_USER} start_zergpool.sh ./start_zergpool.sh
+COPY --chown=${XMRIG_USER}:${XMRIG_USER} config.json ./config.json
+
+RUN chmod +x start_zergpool.sh
+
+# Environment variables for configuration
+ENV ALGO="gr" \
+    POOL_ADDRESS="stratum+tcp://ghostrider.mine.zergpool.com:5354" \
+    WALLET_USER="ltc1q6c4vres6a390mtm4updr5jc6thyv22pu0dupq8"
+
+# Use non-privileged port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD /usr/local/bin/xmrig --version || exit 1
+
+# Run as non-root user
+USER ${XMRIG_USER}
+
+# Use exec form for better signal handling
+ENTRYPOINT ["/usr/local/bin/xmrig"]
