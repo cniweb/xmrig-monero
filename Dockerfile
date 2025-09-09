@@ -11,6 +11,7 @@ ARG XMRIG_GID=1000
 ENV ALGO="gr"
 ENV POOL_ADDRESS="stratum+tcp://ghostrider.mine.zergpool.com:5354"
 ENV WALLET_USER="ltc1q6c4vres6a390mtm4updr5jc6thyv22pu0dupq8"
+ENV PASSWORD="c=LTC"
 
 # Create non-root user and group
 RUN groupadd -g ${XMRIG_GID} ${XMRIG_USER} \
