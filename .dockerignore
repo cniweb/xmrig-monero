@@ -5,6 +5,7 @@
 
 # Documentation
 README.md
+SECURITY.md
 
 # Build artifacts
 **/*.tar.gz
@@ -25,5 +26,9 @@ README.md
 *.log
 **/*.log
 
-# Other
+# Whitesource config
 .whitesource
+
+# Build files
+build.sh
+security-check.sh
