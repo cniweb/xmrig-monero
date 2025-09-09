@@ -35,7 +35,7 @@ echo
 
 # Test 4: Check base image
 echo "4. Base Image Security:"
-echo "   Using debian:bookworm-slim (recent, security-maintained base)"
+echo "   Using debian:trixie-slim (recent, security-maintained base)"
 echo "   ✓ PASS: Using current Debian stable release"
 echo
 

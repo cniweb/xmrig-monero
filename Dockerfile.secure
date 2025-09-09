@@ -1,5 +1,5 @@
 # Multi-stage build for even better security
-FROM debian:bookworm-slim AS builder
+FROM debian:trixie-slim AS builder
 
 ARG VERSION_TAG=6.24.0
 
@@ -23,7 +23,7 @@ RUN wget --no-check-certificate --tries=3 --timeout=30 \
     && chmod +x /usr/local/bin/xmrig
 
 # Final stage with minimal runtime image
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 # Create non-root user
 ARG XMRIG_USER=xmrig

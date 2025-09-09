@@ -17,7 +17,7 @@ This Docker image implements several security best practices:
 ### Container Security
 - **Non-root execution**: Container runs as unprivileged user (uid=1000)
 - **Non-privileged ports**: Uses port 8080 instead of privileged port 80
-- **Minimal base image**: Uses debian:bookworm-slim for reduced attack surface
+- **Minimal base image**: Uses debian:trixie-slim for reduced attack surface
 - **No hardcoded secrets**: Removed hardcoded JWT tokens and passwords
 - **Proper file ownership**: All files owned by non-root user
 
