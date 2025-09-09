@@ -1,0 +1,29 @@
+# Git
+.git
+.gitignore
+.github
+
+# Documentation
+README.md
+
+# Build artifacts
+**/*.tar.gz
+**/*.zip
+
+# Temporary files
+*.tmp
+*.temp
+**/.DS_Store
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+**/*.log
+
+# Other
+.whitesource
