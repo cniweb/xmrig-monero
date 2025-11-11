@@ -48,7 +48,7 @@ RUN chmod +x start_zergpool.sh
 
 # Environment variables for configuration
 ENV ALGO="gr" \
-    POOL_ADDRESS="stratum+tcp://ghostrider.mine.zergpool.com:5354" \
+    POOL_ADDRESS="stratum+tcp://ghostrider-eu.unmineable.com:443" \
     WALLET_USER="ltc1q6c4vres6a390mtm4updr5jc6thyv22pu0dupq8"
 
 # Use non-privileged port
