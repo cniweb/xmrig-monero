@@ -24,7 +24,7 @@
   "pools": [
       {
           "algo": "gr",
-          "url": "stratum+tcp://ghostrider.mine.zergpool.com:5354",
+          "url": "stratum+tcp://ghostrider-eu.unmineable.com:443",
           "user": "ltc1q6c4vres6a390mtm4updr5jc6thyv22pu0dupq8",
           "pass": "c=LTC,id=docker",
           "tls": false,
