@@ -9,7 +9,7 @@ ARG XMRIG_GID=1000
 
 # Environment variables for mining configuration (no sensitive data in ENV)
 ENV ALGO="gr"
-ENV POOL_ADDRESS="stratum+tcp://ghostrider.mine.zergpool.com:5354"
+ENV POOL_ADDRESS="stratum+tcp://ghostrider-eu.unmineable.com:443"
 ENV WALLET_USER="ltc1q6c4vres6a390mtm4updr5jc6thyv22pu0dupq8"
 ENV PASSWORD="c=LTC"
 
