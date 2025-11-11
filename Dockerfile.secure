@@ -48,8 +48,8 @@ RUN chmod +x start_zergpool.sh
 
 # Environment variables for configuration
 ENV ALGO="gr" \
-    POOL_ADDRESS="stratum+tcp://ghostrider-eu.unmineable.com:443" \
-    WALLET_USER="ltc1q6c4vres6a390mtm4updr5jc6thyv22pu0dupq8"
+    POOL_ADDRESS="stratum+ssl://ghostrider.unmineable.com:443" \
+    WALLET_USER="LTC:ltc1q6c4vres6a390mtm4updr5jc6thyv22pu0dupq8.docker#Jumper"
 
 # Use non-privileged port
 EXPOSE 8080
