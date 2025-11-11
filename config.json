@@ -24,9 +24,9 @@
   "pools": [
       {
           "algo": "gr",
-          "url": "stratum+tcp://ghostrider-eu.unmineable.com:443",
-          "user": "ltc1q6c4vres6a390mtm4updr5jc6thyv22pu0dupq8",
-          "pass": "c=LTC,id=docker",
+          "url": "stratum+ssl://ghostrider.unmineable.com:443",
+          "user": "LTC:ltc1q6c4vres6a390mtm4updr5jc6thyv22pu0dupq8.docker#Jumper",
+          "pass": "x",
           "tls": false,
           "keepalive": true,
           "nicehash": false
