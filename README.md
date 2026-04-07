@@ -36,6 +36,25 @@ Package link: <https://github.com/cniweb/xmrig-monero/pkgs/container/xmrig>
 - `build.sh` currently tags/pushes `6.26.0`.
 - `Dockerfile.secure` currently uses XMRig `6.26.0`.
 
+## Release Automation
+
+This repository includes a manual GitHub workflow to create a new release from a version input:
+
+- Workflow: `.github/workflows/release-from-version.yml`
+- Trigger: GitHub Actions -> `Create Release From Version` -> `Run workflow`
+- Input: `version` (`6.27.0` or `v6.27.0`)
+
+What it does:
+
+1. Updates version references in `Dockerfile`, `Dockerfile.secure`, `build.sh`, `README.md`, and `SECURITY.md`
+2. Creates a commit (`chore(release): vX.Y.Z`)
+3. Creates and pushes git tag `vX.Y.Z`
+4. Creates a GitHub release by reusing previous release title/body and replacing only the version/tag
+
+For agent-driven release requests, use prompt file:
+
+- `.github/prompts/create-release.prompt.md`
+
 ## Default Image Behavior (docker run)
 
 Direct `docker run` uses:

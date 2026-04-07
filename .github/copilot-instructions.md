@@ -28,6 +28,7 @@
 - Keep XMRig version synchronized across `Dockerfile`, `Dockerfile.secure`, `build.sh`, and `README.md`.
 - Use port `8080` consistently.
 - MSR and 1GB huge pages require host-level Linux capabilities; they are not expected to work in Azure Container Instances or Docker Desktop/WSL2.
+- For releases, prefer workflow `.github/workflows/release-from-version.yml` and keep `SECURITY.md` supported-version row in sync.
 - Do not duplicate long docs in instructions; reference:
 	- `README.md` for runtime usage and Azure VM commands.
 	- `SECURITY.md` for security policy and reporting.

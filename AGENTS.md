@@ -13,6 +13,7 @@ If guidance here and in the copilot instructions differ, treat [.github/copilot-
 1. Read [.github/copilot-instructions.md](.github/copilot-instructions.md) first.
 2. For runtime and platform details, read [README.md](README.md).
 3. For security policy and reporting, read [SECURITY.md](SECURITY.md).
+4. For release process, use [.github/prompts/create-release.prompt.md](.github/prompts/create-release.prompt.md) or run workflow [.github/workflows/release-from-version.yml](.github/workflows/release-from-version.yml).
 
 ## Mandatory Project Rules
 
