@@ -2,66 +2,59 @@
 
 ![XMRig](https://avatars0.githubusercontent.com/u/27528955?s=460&u=555699fb82e7598ed7dd1f6e47302042b48a10c3&v=4)
 
-High performance, open source RandomX, CryptoNight, AstroBWT and Argon2 CPU/GPU Miner Docker Image.
+High performance, open source RandomX, CryptoNight, AstroBWT and Argon2 CPU/GPU miner Docker image.
 
 [![Build & Push Docker Image](https://github.com/cniweb/xmrig-monero/actions/workflows/docker-build.yml/badge.svg)](https://github.com/cniweb/xmrig-monero/actions/workflows/docker-build.yml) [![Snyk Container](https://github.com/cniweb/xmrig-monero/actions/workflows/snyk-container-analysis.yml/badge.svg)](https://github.com/cniweb/xmrig-monero/actions/workflows/snyk-container-analysis.yml) ![Docker Pulls](https://img.shields.io/docker/pulls/cniweb/xmrig)
 
 ## Available Container Registries
 
-This Docker image is automatically built and pushed to multiple container registries on every commit to the main branch:
+This image is published to multiple registries.
 
-### Docker Hub (docker.io)
+### Docker Hub
 
 ```bash
-# Pull and run latest version
 docker run docker.io/cniweb/xmrig:latest
-
-# Pull specific commit
-docker run docker.io/cniweb/xmrig:<commit-sha>
 ```
 
-### GitHub Container Registry (ghcr.io)
+### GitHub Container Registry
 
 ```bash
-# Pull and run latest version
 docker run ghcr.io/cniweb/xmrig:latest
-
-# Pull specific commit
-docker run ghcr.io/cniweb/xmrig:<commit-sha>
 ```
-
-Link: <https://github.com/cniweb/xmrig-monero/pkgs/container/xmrig>
 
 ### Quay.io
 
 ```bash
-# Pull and run latest version
 docker run quay.io/cniweb/xmrig:latest
-
-# Pull specific commit
-docker run quay.io/cniweb/xmrig:<commit-sha>
 ```
 
-## Available Tags
+Package link: <https://github.com/cniweb/xmrig-monero/pkgs/container/xmrig>
 
-- `latest` - Latest stable build from the main branch
-- `<commit-sha>` - Specific commit version (e.g., `a1b2c3d4...`)
-- `6.22.2` - Version-specific tags (legacy)
+## Version Notes
 
-## Runtime Profiles
+- `Dockerfile` currently uses XMRig `6.26.0`.
+- `build.sh` currently tags/pushes `6.26.0`.
+- `Dockerfile.secure` currently uses XMRig `6.26.0`.
 
-### Default Linux RandomX Profile
+## Default Image Behavior (docker run)
 
-The default [xmrig-monero/compose.yaml](xmrig-monero/compose.yaml) now targets native Linux RandomX mining directly from the published registry image. No local Docker build is required.
+Direct `docker run` uses:
 
-It does the following by default when you run it on Linux:
+- bundled `config.json` (GhostRider defaults)
+- non-root user `xmrig`
+- entrypoint `docker-entrypoint.sh`
 
-- starts the container as `root`
-- runs the published image from `ghcr.io/cniweb/xmrig:latest`
-- requests MSR access
-- requests Huge Pages JIT
-- requests RandomX 1GB Huge Pages
-- tries to reserve Huge Pages from inside the privileged container before starting XMRig
+Example:
+
+```bash
+docker run --rm ghcr.io/cniweb/xmrig:latest --version
+```
+
+MSR and 1GB huge pages are not enabled automatically in this default non-root mode.
+
+## Linux Compose Profile (RandomX)
+
+`compose.yaml` is a Linux-focused RandomX runtime profile that runs the published image with elevated runtime permissions and a startup helper script.
 
 Usage:
 
@@ -70,33 +63,80 @@ cp .env.randomx.example .env
 docker compose up -d xmrig
 ```
 
-Adjust at least `POOL_ADDRESS`, `WALLET_USER`, and `PASSWORD` in `.env` before you start it.
+Main files:
 
-### RandomX Example Files
+- `compose.yaml`
+- `start-linux-randomx.sh`
+- `.env.randomx.example`
+- `config.randomx.json` (standalone RandomX config example)
 
-The repository now includes two RandomX-oriented examples:
+Optional overrides:
 
-- [xmrig-monero/.env.randomx.example](xmrig-monero/.env.randomx.example) for runtime values used by Compose
-- [xmrig-monero/config.randomx.json](xmrig-monero/config.randomx.json) as a Monero/RandomX-oriented standalone XMRig config example
+- `compose.linux-msr.yaml`
+- `compose.linux-hugepages.yaml`
 
-### Alternative Overrides
-
-The override files still exist for small behavior adjustments on top of the default Linux profile:
-
-- [xmrig-monero/compose.linux-msr.yaml](xmrig-monero/compose.linux-msr.yaml)
-- [xmrig-monero/compose.linux-hugepages.yaml](xmrig-monero/compose.linux-hugepages.yaml)
-
-They now add environment-based tweaks and can be combined safely.
-
-Example:
+Example with override:
 
 ```bash
 docker compose -f compose.yaml -f compose.linux-hugepages.yaml up -d xmrig
 ```
 
-### Notes
+## Azure VM (Linux): docker run with MSR + Huge Pages
 
-- `FAILED TO APPLY MSR MOD HASHRATE WILL BE LOW` means XMRig still could not access the MSR registers at runtime.
-- `HUGE PAGES supported` only means the binary supports Huge Pages. For real RandomX gains, the runtime log should show successful allocation, ideally `huge pages 100%`.
-- The default Linux profile uses `privileged: true` intentionally so the published image can prepare MSR and Huge Pages without a local rebuild.
-- On Docker Desktop for Windows and WSL2, MSR and 1GB Huge Pages usually remain constrained by the virtualization layer. In that setup, native Linux is the correct target for this profile.
+If you run on a native Linux Azure VM (not ACI), prepare host settings first:
+
+```bash
+sudo modprobe msr
+sudo modprobe msr allow_writes=on
+sudo sysctl -w vm.nr_hugepages="$(nproc)"
+for i in /sys/devices/system/node/node*; do
+  echo 3 | sudo tee "$i/hugepages/hugepages-1048576kB/nr_hugepages" >/dev/null
+done
+```
+
+Then run:
+
+```bash
+docker run -d \
+  --name xmrig \
+  --restart unless-stopped \
+  --user root \
+  --privileged \
+  --cap-add=SYS_RAWIO \
+  --cap-add=IPC_LOCK \
+  --device=/dev/cpu:/dev/cpu \
+  --ulimit memlock=-1:-1 \
+  -p 8080:8080 \
+  -e XMRIG_MSR=1 \
+  -e XMRIG_HUGE_PAGES_JIT=1 \
+  -e XMRIG_RANDOMX_1GB_PAGES=1 \
+  -e ALGO=rx/0 \
+  -e POOL_ADDRESS='stratum+ssl://pool.supportxmr.com:443' \
+  -e WALLET_USER='YOUR_MONERO_WALLET.worker' \
+  -e PASSWORD='x' \
+  ghcr.io/cniweb/xmrig:latest
+```
+
+Check runtime status:
+
+```bash
+docker logs -f xmrig
+```
+
+## Azure Container Instances Limitation
+
+Azure Container Instances does not expose the host-level interfaces required for MSR and 1GB huge pages.
+
+Typical ACI log messages:
+
+- `msr kernel module is not available`
+- `FAILED TO APPLY MSR MOD, HASHRATE WILL BE LOW`
+- `1GB PAGES disabled`
+
+For MSR and huge pages tuning, use a native Linux VM runtime.
+
+## Notes
+
+- `HUGE PAGES supported` means binary support exists, not that allocation succeeded.
+- For real gains, XMRig should report high huge pages allocation (ideally near `100%`).
+- On Docker Desktop with WSL2, MSR and 1GB huge pages are often constrained by virtualization.

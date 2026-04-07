@@ -1,7 +1,7 @@
 # Multi-stage build for even better security
 FROM debian:trixie-slim AS builder
 
-ARG VERSION_TAG=6.24.0
+ARG VERSION_TAG=6.26.0
 
 # Install build dependencies
 RUN apt-get update \
