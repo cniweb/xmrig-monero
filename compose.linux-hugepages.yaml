@@ -1,0 +1,4 @@
+services:
+  xmrig:
+    environment:
+      XMRIG_RANDOMX_MODE: fast

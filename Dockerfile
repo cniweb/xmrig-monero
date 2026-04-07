@@ -2,7 +2,7 @@
 FROM debian:trixie-slim
 
 # Set non-root user early
-ARG VERSION_TAG=6.24.0
+ARG VERSION_TAG=6.26.0
 ARG XMRIG_USER=xmrig
 ARG XMRIG_UID=1000
 ARG XMRIG_GID=1000
@@ -23,6 +23,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
+        kmod \
         wget \
         gnupg \
     && update-ca-certificates \
@@ -42,16 +43,19 @@ RUN wget --no-check-certificate --tries=3 --timeout=30 \
     && rm -rf xmrig.tar.gz xmrig-${VERSION_TAG}
 
 # Copy configuration files and set proper permissions
+COPY --chown=${XMRIG_USER}:${XMRIG_USER} docker-entrypoint.sh .
 COPY --chown=${XMRIG_USER}:${XMRIG_USER} start_zergpool.sh .
 COPY --chown=${XMRIG_USER}:${XMRIG_USER} config.json .
 
-RUN chmod +x start_zergpool.sh xmrig
+RUN chmod +x docker-entrypoint.sh start_zergpool.sh xmrig
 
 # Use non-privileged port
 EXPOSE 8080
+
+ENV XMRIG_MSR="0"
 
 # Run as non-root user
 USER ${XMRIG_USER}
 
 # Use array form for better signal handling
-ENTRYPOINT ["./xmrig"]
+ENTRYPOINT ["./docker-entrypoint.sh"]

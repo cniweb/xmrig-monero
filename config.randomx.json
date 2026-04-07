@@ -1,0 +1,41 @@
+{
+  "api": {
+    "worker-id": "docker-randomx"
+  },
+  "http": {
+    "enabled": true,
+    "host": "0.0.0.0",
+    "port": 8080,
+    "restricted": true
+  },
+  "autosave": true,
+  "colors": false,
+  "randomx": {
+    "mode": "auto",
+    "1gb-pages": true,
+    "rdmsr": true,
+    "wrmsr": true
+  },
+  "cpu": {
+    "enabled": true,
+    "huge-pages": true,
+    "huge-pages-jit": true,
+    "hw-aes": true,
+    "memory-pool": true,
+    "max-threads-hint": 100
+  },
+  "donate-level": 1,
+  "opencl": false,
+  "cuda": false,
+  "pools": [
+    {
+      "algo": "rx/0",
+      "url": "stratum+ssl://pool.supportxmr.com:443",
+      "user": "YOUR_MONERO_WALLET.worker",
+      "pass": "x",
+      "tls": true,
+      "keepalive": true,
+      "nicehash": false
+    }
+  ]
+}

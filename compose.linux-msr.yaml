@@ -1,0 +1,4 @@
+services:
+  xmrig:
+    environment:
+      XMRIG_NO_RDMSR: "1"

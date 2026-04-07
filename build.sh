@@ -2,7 +2,7 @@
 # Secure build script for XMRig Docker image
 # Define image name, version and registries
 image="xmrig"
-version="6.24.0"
+version="6.26.0"
 registries=("docker.io" "ghcr.io" "quay.io")
 
 # Support for different Dockerfile variants

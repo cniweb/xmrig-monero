@@ -1,0 +1,29 @@
+services:
+  xmrig:
+    image: ${XMRIG_IMAGE:-ghcr.io/cniweb/xmrig:latest}
+    pull_policy: always
+    user: root
+    privileged: true
+    cap_add:
+      - IPC_LOCK
+      - SYS_RAWIO
+    devices:
+      - /dev/cpu:/dev/cpu
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    entrypoint:
+      - /bin/sh
+      - /opt/xmrig/start-linux-randomx.sh
+    environment:
+      ALGO: ${ALGO:-rx/0}
+      POOL_ADDRESS: ${POOL_ADDRESS:-stratum+ssl://pool.supportxmr.com:443}
+      WALLET_USER: ${WALLET_USER:-YOUR_MONERO_WALLET.worker}
+      PASSWORD: ${PASSWORD:-x}
+      API_PORT: ${API_PORT:-8080}
+    volumes:
+      - ./start-linux-randomx.sh:/opt/xmrig/start-linux-randomx.sh:ro
+    ports:
+      - "${API_PORT:-8080}:8080"
+    restart: unless-stopped
