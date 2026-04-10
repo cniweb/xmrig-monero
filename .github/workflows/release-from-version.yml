@@ -120,7 +120,7 @@ jobs:
             exit 1
           fi
 
-          git add Dockerfile Dockerfile.secure build.sh README.md SECURITY.md
+          git add Dockerfile Dockerfile.secure build.sh README.md SECURITY.md CHANGELOG.md
           git commit -m "chore(release): ${{ steps.ver.outputs.tag }}"
 
       - name: Create and push tag

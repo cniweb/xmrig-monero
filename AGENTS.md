@@ -13,7 +13,7 @@ Runtime entrypoint is `docker-entrypoint.sh`. The Compose profile (`compose.yaml
 
 ## Version sync (critical)
 
-When changing the XMRig version, update **all five** files — the release workflow (`release-from-version.yml`) does this automatically, but manual edits must match:
+When changing the XMRig version, update **all six** files — the release workflow (`release-from-version.yml`) handles five automatically, but `CHANGELOG.md` must be updated manually or by the agent:
 
 | File | Pattern |
 |---|---|
@@ -22,8 +22,19 @@ When changing the XMRig version, update **all five** files — the release workf
 | `build.sh` | `version="X.Y.Z"` |
 | `README.md` | three backtick-quoted version strings under "Version Notes" |
 | `SECURITY.md` | supported-version table row (`X.Y.x`) |
+| `CHANGELOG.md` | new section at top with upstream changes and packaging changes |
 
 For automated releases, use workflow `.github/workflows/release-from-version.yml` or prompt `.github/prompts/create-release.prompt.md`.
+
+## Checking for new upstream versions
+
+When asked to check for a new XMRig version:
+
+1. Run `gh release list --repo xmrig/xmrig --limit 5` to find the latest upstream release.
+2. Compare with the current version in `Dockerfile` (`ARG VERSION_TAG=...`).
+3. If newer, fetch upstream release notes: `gh release view v${VERSION} --repo xmrig/xmrig --json body -q .body`
+4. Extract changelog items (ignore SHA256 checksums and GPG signatures).
+5. Follow the full release workflow in `.github/prompts/create-release.prompt.md`.
 
 ## Validation commands
 
