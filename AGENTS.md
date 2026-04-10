@@ -1,33 +1,54 @@
 # Agent Workspace Guide
 
-This file exists so agentic AI tools that discover AGENTS.md can load workspace guidance.
+Primary instruction source: [.github/copilot-instructions.md](.github/copilot-instructions.md) (canonical when it conflicts with this file).
 
-Primary instruction source:
+## What this repo is
 
-- [.github/copilot-instructions.md](.github/copilot-instructions.md)
+Docker packaging for prebuilt XMRig binaries. No source compilation — Dockerfiles download release tarballs from `github.com/xmrig/xmrig`. There are two image variants:
 
-If guidance here and in the copilot instructions differ, treat [.github/copilot-instructions.md](.github/copilot-instructions.md) as canonical and update this file to match.
+- `Dockerfile` — single-stage, standard image.
+- `Dockerfile.secure` — multi-stage build; binary ends up at `/usr/local/bin/xmrig` (not in the workdir). Includes a HEALTHCHECK.
 
-## Quick Start
+Runtime entrypoint is `docker-entrypoint.sh`. The Compose profile (`compose.yaml`) uses a separate script `start-linux-randomx.sh` instead.
 
-1. Read [.github/copilot-instructions.md](.github/copilot-instructions.md) first.
-2. For runtime and platform details, read [README.md](README.md).
-3. For security policy and reporting, read [SECURITY.md](SECURITY.md).
-4. For release process, use [.github/prompts/create-release.prompt.md](.github/prompts/create-release.prompt.md) or run workflow [.github/workflows/release-from-version.yml](.github/workflows/release-from-version.yml).
+## Version sync (critical)
 
-## Mandatory Project Rules
+When changing the XMRig version, update **all five** files — the release workflow (`release-from-version.yml`) does this automatically, but manual edits must match:
 
-- Keep XMRig version synchronized across [Dockerfile](Dockerfile), [Dockerfile.secure](Dockerfile.secure), [build.sh](build.sh), and [README.md](README.md).
-- Preserve shell script style in this repo (POSIX-friendly syntax and explicit error handling).
-- Prefer environment-driven runtime configuration over hardcoded values.
-- Use port 8080 consistently.
-- MSR and 1GB huge pages require host-level Linux capabilities and are not expected to work in Azure Container Instances or Docker Desktop with WSL2.
+| File | Pattern |
+|---|---|
+| `Dockerfile` | `ARG VERSION_TAG=X.Y.Z` |
+| `Dockerfile.secure` | `ARG VERSION_TAG=X.Y.Z` |
+| `build.sh` | `version="X.Y.Z"` |
+| `README.md` | three backtick-quoted version strings under "Version Notes" |
+| `SECURITY.md` | supported-version table row (`X.Y.x`) |
 
-## Validation Commands
+For automated releases, use workflow `.github/workflows/release-from-version.yml` or prompt `.github/prompts/create-release.prompt.md`.
 
-- docker build . -t cniweb/xmrig:test --file Dockerfile
-- docker build . -t cniweb/xmrig:secure --file Dockerfile.secure
-- ./build.sh build-only
-- docker run --rm cniweb/xmrig:test --version
-- docker run --rm cniweb/xmrig:test --dry-run
-- ./security-check.sh
+## Validation commands
+
+```sh
+docker build . -t cniweb/xmrig:test --file Dockerfile
+docker build . -t cniweb/xmrig:secure --file Dockerfile.secure
+./build.sh build-only
+docker run --rm cniweb/xmrig:test --version
+docker run --rm cniweb/xmrig:test --dry-run
+./security-check.sh          # requires cniweb/xmrig:test image to exist
+```
+
+## Shell script conventions
+
+- `docker-entrypoint.sh` and `start-linux-randomx.sh` use `/bin/sh` with `set -eu` — keep them POSIX-compatible (no bashisms).
+- `build.sh` and `security-check.sh` use `#!/bin/bash`.
+- Prefer environment-driven runtime config over hardcoded values.
+
+## CI
+
+- Push to `main` triggers `.github/workflows/docker-build.yml` which builds and pushes to Docker Hub and GHCR (Quay.io steps are commented out).
+- Snyk container scanning runs via `snyk-container-analysis.yml`.
+
+## Conventions
+
+- Always use port **8080** (non-privileged).
+- MSR and 1GB huge pages require host-level Linux capabilities; they do not work in Azure Container Instances or Docker Desktop with WSL2.
+- Container runs as non-root user `xmrig` (uid 1000) by default; root is only needed for MSR/huge-pages features.
