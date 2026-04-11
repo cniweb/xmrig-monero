@@ -62,4 +62,4 @@ if is_enabled "$HUGE_PAGES_JIT_ENABLED"; then
     set -- --huge-pages-jit "$@"
 fi
 
-exec ./xmrig "$@"
+exec xmrig "$@"

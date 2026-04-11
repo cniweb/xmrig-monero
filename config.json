@@ -6,7 +6,7 @@
       "enabled": true,
       "host": "0.0.0.0",
       "port": 8080,
-      "access-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+      "access-token": null,
       "restricted": true
   },
   "autosave": true,
@@ -27,7 +27,7 @@
           "url": "stratum+ssl://ghostrider.unmineable.com:443",
           "user": "LTC:ltc1q6c4vres6a390mtm4updr5jc6thyv22pu0dupq8.docker#Jumper",
           "pass": "x",
-          "tls": false,
+          "tls": true,
           "keepalive": true,
           "nicehash": false
       }

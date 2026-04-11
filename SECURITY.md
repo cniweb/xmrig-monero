@@ -23,7 +23,7 @@ This Docker image implements several security best practices:
 
 ### Build Security
 - **Dependency management**: Minimal package installation with cleanup
-- **SSL verification**: Secure download of XMRig binaries
+- **SSL verification**: TLS-verified download of XMRig binaries via ca-certificates
 - **Build context optimization**: .dockerignore to reduce build context
 
 ### Runtime Security

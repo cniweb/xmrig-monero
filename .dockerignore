@@ -6,6 +6,9 @@
 # Documentation
 README.md
 SECURITY.md
+CHANGELOG.md
+AGENTS.md
+LICENSE
 
 # Build artifacts
 **/*.tar.gz
@@ -29,6 +32,15 @@ SECURITY.md
 # Whitesource config
 .whitesource
 
-# Build files
+# Build and test scripts
 build.sh
 security-check.sh
+
+# Compose files (not needed in image build context)
+compose.yaml
+compose.linux-*.yaml
+
+# Environment examples
+.env.example
+.env.randomx.example
+config.randomx.json

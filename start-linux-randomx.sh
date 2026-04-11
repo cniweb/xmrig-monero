@@ -76,4 +76,4 @@ if [ -n "$EXTRA_ARGS" ]; then
     set -- $EXTRA_ARGS "$@"
 fi
 
-exec /home/xmrig/xmrig "$@"
+exec xmrig "$@"

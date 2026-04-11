@@ -22,12 +22,6 @@ docker run docker.io/cniweb/xmrig:latest
 docker run ghcr.io/cniweb/xmrig:latest
 ```
 
-### Quay.io
-
-```bash
-docker run quay.io/cniweb/xmrig:latest
-```
-
 Package link: <https://github.com/cniweb/xmrig-monero/pkgs/container/xmrig>
 
 ## Version Notes

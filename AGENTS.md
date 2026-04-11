@@ -55,8 +55,9 @@ docker run --rm cniweb/xmrig:test --dry-run
 
 ## CI
 
-- Push to `main` triggers `.github/workflows/docker-build.yml` which builds and pushes to Docker Hub and GHCR (Quay.io steps are commented out).
+- Push to `main` triggers `.github/workflows/docker-build.yml` which builds and pushes to Docker Hub and GHCR.
 - Snyk container scanning runs via `snyk-container-analysis.yml`.
+- Dependabot monitors Docker base images and GitHub Actions versions.
 
 ## Conventions
 

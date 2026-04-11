@@ -22,7 +22,33 @@ Each entry tracks the upstream [XMRig](https://github.com/xmrig/xmrig) version u
 ### Packaging changes
 - Added release automation workflow (`release-from-version.yml`)
 - Added agent workspace guide (`AGENTS.md`)
+- Added `CHANGELOG.md` with full release history
 - Updated README with release automation docs and Compose usage
+
+### Security & bug fixes (audit)
+- **CRITICAL**: Fixed `docker-entrypoint.sh` using relative path `./xmrig` — now uses PATH lookup (`exec xmrig`) for compatibility with both image variants
+- **CRITICAL**: Fixed broken quoting in `start_zergpool.sh` exec line
+- **CRITICAL**: Fixed `start-linux-randomx.sh` hardcoded path `/home/xmrig/xmrig` — now uses `xmrig` via PATH
+- **HIGH**: Removed exposed JWT example token from `config.json` (`access-token` set to `null`)
+- **HIGH**: Removed `--no-check-certificate` from both Dockerfiles — TLS verification now enforced
+- **HIGH**: Added `PASSWORD` env var to `Dockerfile.secure` for parity with standard image
+- **HIGH**: Removed Quay.io references from CI, `build.sh`, and `README.md` (registry was not in use)
+- **HIGH**: GHCR login switched from custom secrets to `github.actor` + `GITHUB_TOKEN`
+- Added SHA256 checksum verification for XMRig binary downloads in both Dockerfiles
+- Added `set -eu` to all shell scripts for fail-fast behavior
+- Removed unused packages (`curl`, `gnupg`) from Dockerfiles
+- Removed stale `docker-image.yml` workflow (triggered on non-existent `master` branch)
+- Set login shell to `/usr/sbin/nologin` for container user
+- Removed redundant `USER` directives in Dockerfiles
+- Replaced hardcoded wallet address with `YOUR_WALLET_ADDRESS` placeholder
+- Added `tls: true` to `config.json` for encrypted pool connections
+- HEALTHCHECK in `Dockerfile.secure` uses `xmrig --version` via PATH instead of absolute path
+- Added `.env.randomx.example` for RandomX-specific environment variables
+- Extended `.dockerignore` to exclude docs and dev files from build context
+- Made `security-check.sh` accept image name as parameter
+- Added `github-actions` ecosystem to Dependabot configuration
+- Corrected SSL/TLS claim in `SECURITY.md`
+- `build.sh` now exits before security check when called with `build-only`
 
 ## [6.24.0] - 2025-07-16
 

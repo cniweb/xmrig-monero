@@ -3,7 +3,7 @@
 # Define image name, version and registries
 image="xmrig"
 version="6.26.0"
-registries=("docker.io" "ghcr.io" "quay.io")
+registries=("docker.io" "ghcr.io")
 
 # Support for different Dockerfile variants
 DOCKERFILE="${DOCKERFILE:-Dockerfile}"
@@ -30,16 +30,16 @@ fi
 
 echo "Docker build succeeded!"
 
+# Check if we should only build (for CI/CD usage)
+if [ "$1" = "build-only" ]; then
+  echo "Build-only mode: skipping security check and push to registries"
+  exit 0
+fi
+
 # Run security check if available
 if [ -f "security-check.sh" ]; then
     echo "Running security check..."
     ./security-check.sh
-fi
-
-# Check if we should only build (for CI/CD usage)
-if [ "$1" = "build-only" ]; then
-  echo "Build-only mode: skipping push to registries"
-  exit 0
 fi
 
 # Tag and push the images

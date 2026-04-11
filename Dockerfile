@@ -10,22 +10,20 @@ ARG XMRIG_GID=1000
 # Environment variables for mining configuration (no sensitive data in ENV)
 ENV ALGO="gr"
 ENV POOL_ADDRESS="stratum+ssl://ghostrider.unmineable.com:443"
-ENV WALLET_USER="LTC:ltc1q6c4vres6a390mtm4updr5jc6thyv22pu0dupq8.docker#Jumper"
+ENV WALLET_USER="YOUR_WALLET_ADDRESS"
 ENV PASSWORD="x"
 
 # Create non-root user and group
 RUN groupadd -g ${XMRIG_GID} ${XMRIG_USER} \
-    && useradd -u ${XMRIG_UID} -g ${XMRIG_GID} -m -s /bin/bash ${XMRIG_USER}
+    && useradd -u ${XMRIG_UID} -g ${XMRIG_GID} -m -s /usr/sbin/nologin ${XMRIG_USER}
 
 # Install dependencies with specific versions and security updates
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
-        curl \
         kmod \
         wget \
-        gnupg \
     && update-ca-certificates \
     && apt-get autoremove -y \
     && apt-get clean \
@@ -35,12 +33,16 @@ RUN apt-get update \
 USER ${XMRIG_USER}
 WORKDIR /home/${XMRIG_USER}
 
-RUN wget --no-check-certificate --tries=3 --timeout=30 \
+RUN wget --tries=3 --timeout=30 \
         "https://github.com/xmrig/xmrig/releases/download/v${VERSION_TAG}/xmrig-${VERSION_TAG}-linux-static-x64.tar.gz" \
         -O xmrig.tar.gz \
+    && wget --tries=3 --timeout=30 \
+        "https://github.com/xmrig/xmrig/releases/download/v${VERSION_TAG}/SHA256SUMS" \
+        -O SHA256SUMS \
+    && grep "xmrig-${VERSION_TAG}-linux-static-x64.tar.gz" SHA256SUMS | sha256sum -c - \
     && tar xf xmrig.tar.gz \
     && mv xmrig-${VERSION_TAG}/* . \
-    && rm -rf xmrig.tar.gz xmrig-${VERSION_TAG}
+    && rm -rf xmrig.tar.gz xmrig-${VERSION_TAG} SHA256SUMS
 
 # Copy configuration files and set proper permissions
 COPY --chown=${XMRIG_USER}:${XMRIG_USER} docker-entrypoint.sh .
@@ -53,9 +55,7 @@ RUN chmod +x docker-entrypoint.sh start_zergpool.sh xmrig
 EXPOSE 8080
 
 ENV XMRIG_MSR="0"
-
-# Run as non-root user
-USER ${XMRIG_USER}
+ENV PATH="/home/${XMRIG_USER}:${PATH}"
 
 # Use array form for better signal handling
 ENTRYPOINT ["./docker-entrypoint.sh"]
