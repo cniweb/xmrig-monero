@@ -132,7 +132,7 @@ jobs:
           git push origin "${{ steps.ver.outputs.tag }}"
 
       - name: Create GitHub release from previous template
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           NEW_TAG: ${{ steps.ver.outputs.tag }}
           NEW_VERSION: ${{ steps.ver.outputs.version }}
