@@ -39,7 +39,7 @@ RUN wget --tries=3 --timeout=30 \
     && wget --tries=3 --timeout=30 \
         "https://github.com/xmrig/xmrig/releases/download/v${VERSION_TAG}/SHA256SUMS" \
         -O SHA256SUMS \
-    && grep "xmrig-${VERSION_TAG}-linux-static-x64.tar.gz" SHA256SUMS | sha256sum -c - \
+    && grep "xmrig-${VERSION_TAG}-linux-static-x64.tar.gz" SHA256SUMS | sed "s|xmrig-${VERSION_TAG}-linux-static-x64.tar.gz|xmrig.tar.gz|" | sha256sum -c - \
     && tar xf xmrig.tar.gz \
     && mv xmrig-${VERSION_TAG}/* . \
     && rm -rf xmrig.tar.gz xmrig-${VERSION_TAG} SHA256SUMS
