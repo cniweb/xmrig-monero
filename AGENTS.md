@@ -1,66 +1,44 @@
 # Agent Workspace Guide
 
-Primary instruction source: [.github/copilot-instructions.md](.github/copilot-instructions.md) (canonical when it conflicts with this file).
+Primary instruction source: `.github/copilot-instructions.md` (canonical when it conflicts with this file).
 
-## What this repo is
+## Repo shape
 
-Docker packaging for prebuilt XMRig binaries. No source compilation — Dockerfiles download release tarballs from `github.com/xmrig/xmrig`. There are two image variants:
+- This repo packages prebuilt XMRig release tarballs; it does not build XMRig from source.
+- `Dockerfile` is the standard image. `Dockerfile.secure` is the multi-stage variant; its binary is copied to `/usr/local/bin/xmrig`, so runtime scripts must use `xmrig` via `PATH`, not `./xmrig`.
+- Default `docker run` uses `docker-entrypoint.sh`. `compose.yaml` does **not** use that entrypoint; it replaces it with `/opt/xmrig/start-linux-randomx.sh` mounted from the repo.
 
-- `Dockerfile` — single-stage, standard image.
-- `Dockerfile.secure` — multi-stage build; binary ends up at `/usr/local/bin/xmrig` (not in the workdir). Includes a HEALTHCHECK.
+## Verification
 
-Runtime entrypoint is `docker-entrypoint.sh`. The Compose profile (`compose.yaml`) uses a separate script `start-linux-randomx.sh` instead.
+- Primary checks are Docker-based:
+  - `docker build . -t cniweb/xmrig:test --file Dockerfile`
+  - `docker build . -t cniweb/xmrig:secure --file Dockerfile.secure`
+  - `docker run --rm cniweb/xmrig:test --version`
+  - `docker run --rm cniweb/xmrig:test --dry-run`
+- `./build.sh build-only` is the same build path CI uses on `main`; it exits before security checks or pushes.
+- `./security-check.sh` defaults to image `cniweb/xmrig:test`; build that tag first or pass a different image name.
 
-## Version sync (critical)
+## Shell and runtime constraints
 
-When changing the XMRig version, update **all six** files — the release workflow (`release-from-version.yml`) handles five automatically, but `CHANGELOG.md` must be updated manually or by the agent:
+- `docker-entrypoint.sh`, `start-linux-randomx.sh`, and `start_zergpool.sh` are `sh` scripts with `set -eu`; keep them POSIX-compatible.
+- Port `8080` is the expected HTTP/API port across Dockerfiles, compose, docs, and checks.
+- The image runs as non-root `xmrig` by default. MSR and 1GB huge pages only work in the root/elevated Linux profile.
+- `compose.yaml` is a Linux host profile that runs `privileged`, mounts `/dev/cpu`, and writes huge-page/MSR settings from inside the container. Do not assume it will work on Docker Desktop/WSL2 or Azure Container Instances.
 
-| File | Pattern |
-|---|---|
-| `Dockerfile` | `ARG VERSION_TAG=X.Y.Z` |
-| `Dockerfile.secure` | `ARG VERSION_TAG=X.Y.Z` |
-| `build.sh` | `version="X.Y.Z"` |
-| `README.md` | three backtick-quoted version strings under "Version Notes" |
-| `SECURITY.md` | supported-version table row (`X.Y.x`) |
-| `CHANGELOG.md` | new section at top with upstream changes and packaging changes |
+## Release/versioning
 
-For automated releases, use workflow `.github/workflows/release-from-version.yml` or prompt `.github/prompts/create-release.prompt.md`.
+- XMRig version bumps must stay synchronized across all six files: `Dockerfile`, `Dockerfile.secure`, `build.sh`, `README.md`, `SECURITY.md`, and `CHANGELOG.md`.
+- The release workflow (`.github/workflows/release-from-version.yml`) handles the first five automatically but **does not** update `CHANGELOG.md` — that must be done manually or by the agent before triggering it.
+- Prefer that workflow for releases: it updates version refs, commits, tags `vX.Y.Z`, and creates the GitHub release.
+- When checking for a new upstream version, compare `Dockerfile`'s `ARG VERSION_TAG` against `gh release list --repo xmrig/xmrig --limit 5`, then fetch notes with `gh release view v${VERSION} --repo xmrig/xmrig --json body -q .body`.
 
-## Checking for new upstream versions
+## Small gotchas
 
-When asked to check for a new XMRig version:
-
-1. Run `gh release list --repo xmrig/xmrig --limit 5` to find the latest upstream release.
-2. Compare with the current version in `Dockerfile` (`ARG VERSION_TAG=...`).
-3. If newer, fetch upstream release notes: `gh release view v${VERSION} --repo xmrig/xmrig --json body -q .body`
-4. Extract changelog items (ignore SHA256 checksums and GPG signatures).
-5. Follow the full release workflow in `.github/prompts/create-release.prompt.md`.
-
-## Validation commands
-
-```sh
-docker build . -t cniweb/xmrig:test --file Dockerfile
-docker build . -t cniweb/xmrig:secure --file Dockerfile.secure
-./build.sh build-only
-docker run --rm cniweb/xmrig:test --version
-docker run --rm cniweb/xmrig:test --dry-run
-./security-check.sh          # requires cniweb/xmrig:test image to exist
-```
-
-## Shell script conventions
-
-- `docker-entrypoint.sh` and `start-linux-randomx.sh` use `/bin/sh` with `set -eu` — keep them POSIX-compatible (no bashisms).
-- `build.sh` and `security-check.sh` use `#!/bin/bash`.
-- Prefer environment-driven runtime config over hardcoded values.
+- `.dockerignore` excludes docs, compose files, `build.sh`, and `security-check.sh`; changes there do not affect image build context.
+- The Linux compose overrides only tweak env vars: `compose.linux-msr.yaml` sets `XMRIG_NO_RDMSR=1`, and `compose.linux-hugepages.yaml` sets `XMRIG_RANDOMX_MODE=fast`.
 
 ## CI
 
-- Push to `main` triggers `.github/workflows/docker-build.yml` which builds and pushes to Docker Hub and GHCR.
-- Snyk container scanning runs via `snyk-container-analysis.yml`.
+- Push to `main` triggers `.github/workflows/docker-build.yml`: builds with `./build.sh build-only`, then tags and pushes versioned + `latest` + commit-SHA tags to Docker Hub and GHCR.
+- Snyk container scanning runs on push/PR to `main` and weekly via `snyk-container-analysis.yml`.
 - Dependabot monitors Docker base images and GitHub Actions versions.
-
-## Conventions
-
-- Always use port **8080** (non-privileged).
-- MSR and 1GB huge pages require host-level Linux capabilities; they do not work in Azure Container Instances or Docker Desktop with WSL2.
-- Container runs as non-root user `xmrig` (uid 1000) by default; root is only needed for MSR/huge-pages features.
