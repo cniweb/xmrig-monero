@@ -20,6 +20,8 @@ Create a release for this repository.
    - `build.sh` → `version="${VERSION}"`
    - `README.md` → three backtick-quoted version strings under "Version Notes"
    - `SECURITY.md` → supported `major.minor.x` row
+5a. **Check third-party action pins** in `.github/workflows/snyk-container-analysis.yml`:
+   - `snyk/actions/docker` is pinned to a version tag (currently `v1.0.0`). Check for a newer release with `git ls-remote https://github.com/snyk/actions refs/tags/*` and update the pin if a newer tag exists.
 6. **Validate** with:
    - `docker build . -t cniweb/xmrig:test --file Dockerfile`
    - `docker build . -t cniweb/xmrig:secure --file Dockerfile.secure`
