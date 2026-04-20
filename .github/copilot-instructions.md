@@ -25,7 +25,7 @@
 - Security checks: `./security-check.sh`
 
 ## Conventions
-- Keep XMRig version synchronized across `Dockerfile`, `Dockerfile.secure`, `build.sh`, and `README.md`.
+- Keep XMRig version synchronized across all six files: `Dockerfile`, `Dockerfile.secure`, `build.sh`, `README.md`, `SECURITY.md`, and `CHANGELOG.md`. The release workflow handles the first five automatically; `CHANGELOG.md` must be updated manually.
 - Use port `8080` consistently.
 - MSR and 1GB huge pages require host-level Linux capabilities; they are not expected to work in Azure Container Instances or Docker Desktop/WSL2.
 - For releases, prefer workflow `.github/workflows/release-from-version.yml` and keep `SECURITY.md` supported-version row in sync.
