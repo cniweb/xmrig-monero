@@ -120,8 +120,16 @@ jobs:
           docker push ghcr.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}
           docker push ghcr.io/cniweb/xmrig:${{ github.sha }}
 
-          # Capture digest for attestation
-          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/cniweb/xmrig:${{ steps.get_version.outputs.version }} | cut -d'@' -f2)
+          # Capture the GHCR-specific digest for attestation/SBOM. The local
+          # image ID is shared across all tags/registries, so
+          # `.RepoDigests` can list Docker Hub's digest before GHCR's;
+          # filter explicitly for the ghcr.io repo digest instead of
+          # trusting index 0.
+          DIGEST=$(docker inspect --format='{{range .RepoDigests}}{{println .}}{{end}}' ghcr.io/cniweb/xmrig:${{ steps.get_version.outputs.version }} | grep '^ghcr.io/cniweb/xmrig@' | head -n1 | cut -d'@' -f2)
+          if [ -z "$DIGEST" ]; then
+            echo "Could not determine ghcr.io digest for cniweb/xmrig" >&2
+            exit 1
+          fi
           echo "digest=$DIGEST" >> $GITHUB_OUTPUT
 
       - name: Generate SLSA provenance attestation
