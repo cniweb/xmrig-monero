@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -12,7 +15,45 @@ permissions:
   attestations: write
 
 jobs:
+  validate:
+    name: Build & validate (${{ matrix.dockerfile }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dockerfile: [Dockerfile, Dockerfile.secure]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Make scripts executable
+        run: chmod +x ./build.sh ./security-check.sh
+
+      - name: Build image (build-only, no push)
+        env:
+          DOCKERFILE: ${{ matrix.dockerfile }}
+        run: ./build.sh build-only
+
+      - name: Extract version from build.sh
+        id: get_version
+        run: |
+          VERSION=$(grep '^version=' build.sh | cut -d'"' -f2)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Extracted version: $VERSION"
+
+      - name: Validate image --version
+        run: docker run --rm "docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}" --version
+
+      - name: Validate image --dry-run
+        run: docker run --rm "docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}" --dry-run
+
+      - name: Run security-check.sh
+        run: ./security-check.sh "docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}"
+
   docker:
+    name: Push images
+    needs: validate
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -44,6 +85,16 @@ jobs:
           VERSION=$(grep '^version=' build.sh | cut -d'"' -f2)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
+
+      - name: Validate image before push
+        run: |
+          docker run --rm "docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}" --version
+          docker run --rm "docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}" --dry-run
+
+      - name: Run security-check.sh
+        run: |
+          chmod +x ./security-check.sh
+          ./security-check.sh "docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}"
 
       - name: Tag Docker image with latest, version, and commit SHA
         run: |

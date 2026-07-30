@@ -34,11 +34,15 @@ Primary instruction source: `.github/copilot-instructions.md` (canonical when it
 
 ## Small gotchas
 
+- xmrig resolves a relative `config.json` against the binary's own path, not the working directory. `docker-entrypoint.sh` injects an explicit `--config=<abs path>` unless the caller already passed `-c`/`--config`; do not remove that shim, especially for `Dockerfile.secure` (binary at `/usr/local/bin`, config at `/home/xmrig`).
 - `.dockerignore` excludes docs, compose files, `build.sh`, and `security-check.sh`; changes there do not affect image build context.
 - The Linux compose overrides only tweak env vars: `compose.linux-msr.yaml` sets `XMRIG_NO_RDMSR=1`, and `compose.linux-hugepages.yaml` sets `XMRIG_RANDOMX_MODE=fast`.
 
 ## CI
 
-- Push to `main` triggers `.github/workflows/docker-build.yml`: builds with `./build.sh build-only`, then tags and pushes versioned + `latest` + commit-SHA tags to Docker Hub and GHCR.
+- `.github/workflows/docker-build.yml` runs on push and PR to `main`:
+  - `validate` job (matrix over `Dockerfile` and `Dockerfile.secure`): builds each with `./build.sh build-only`, then runs `--version`, `--dry-run`, and `security-check.sh` against it. Never pushes.
+  - `docker` job (push events only, gated on `validate` passing): rebuilds `Dockerfile`, re-runs the same validation against the exact image about to ship, then tags and pushes versioned + `latest` + commit-SHA tags to Docker Hub and GHCR, and generates a SLSA provenance attestation.
+  - `Dockerfile.secure` is validated on every push/PR but is not pushed to any registry.
 - Snyk container scanning runs on push/PR to `main` and weekly via `snyk-container-analysis.yml`.
 - Dependabot monitors Docker base images and GitHub Actions versions.
