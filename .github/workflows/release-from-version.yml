@@ -104,6 +104,31 @@ jobs:
                   text = re.sub(pattern, repl, text)
               if text != original:
                   path.write_text(text, encoding="utf-8")
+
+          # CHANGELOG.md is intentionally not silently skipped: require an
+          # "## [Unreleased]" section (added by whoever prepared this
+          # release) and promote it to a dated version heading. This turns
+          # the previously-manual "don't forget CHANGELOG.md" step into a
+          # hard pre-condition instead of an easy-to-miss reminder.
+          import datetime
+
+          changelog = pathlib.Path("CHANGELOG.md")
+          changelog_text = changelog.read_text(encoding="utf-8")
+
+          if "## [Unreleased]" not in changelog_text:
+              raise SystemExit(
+                  "CHANGELOG.md has no '## [Unreleased]' section. "
+                  "Add release notes under an '## [Unreleased]' heading "
+                  "before triggering this workflow."
+              )
+
+          today = datetime.date.today().isoformat()
+          changelog_text = changelog_text.replace(
+              "## [Unreleased]",
+              f"## [{version}] - {today}",
+              1,
+          )
+          changelog.write_text(changelog_text, encoding="utf-8")
           PY
         env:
           VERSION: ${{ steps.ver.outputs.version }}
