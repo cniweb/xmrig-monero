@@ -62,4 +62,23 @@ if is_enabled "$HUGE_PAGES_JIT_ENABLED"; then
     set -- --huge-pages-jit "$@"
 fi
 
+# xmrig resolves a relative "config.json" against the binary's own path, not
+# the working directory. Dockerfile.secure copies the binary to
+# /usr/local/bin, so without an explicit --config it silently fails to find
+# the config shipped alongside this script. Inject an absolute default path
+# unless the caller already passed -c/--config.
+has_config_arg=0
+for arg in "$@"; do
+    case "$arg" in
+        -c|--config|--config=*)
+            has_config_arg=1
+            break
+            ;;
+    esac
+done
+
+if [ "$has_config_arg" -eq 0 ] && [ -f "${CONFIG_FILE:-$(pwd)/config.json}" ]; then
+    set -- --config="${CONFIG_FILE:-$(pwd)/config.json}" "$@"
+fi
+
 exec xmrig "$@"
