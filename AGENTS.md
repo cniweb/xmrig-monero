@@ -28,7 +28,7 @@ Primary instruction source: `.github/copilot-instructions.md` (canonical when it
 ## Release/versioning
 
 - XMRig version bumps must stay synchronized across all six files: `Dockerfile`, `Dockerfile.secure`, `build.sh`, `README.md`, `SECURITY.md`, and `CHANGELOG.md`.
-- The release workflow (`.github/workflows/release-from-version.yml`) handles the first five automatically but **does not** update `CHANGELOG.md` — that must be done manually or by the agent before triggering it.
+- The release workflow (`.github/workflows/release-from-version.yml`) handles all six automatically: it updates version refs in the first five, and promotes `CHANGELOG.md`'s `## [Unreleased]` heading to `## [<version>] - <date>`. **The workflow fails fast if `CHANGELOG.md` has no `## [Unreleased]` section** — add one with the release notes before triggering it.
 - Prefer that workflow for releases: it updates version refs, commits, tags `vX.Y.Z`, and creates the GitHub release.
 - When checking for a new upstream version, compare `Dockerfile`'s `ARG VERSION_TAG` against `gh release list --repo xmrig/xmrig --limit 5`, then fetch notes with `gh release view v${VERSION} --repo xmrig/xmrig --json body -q .body`.
 
