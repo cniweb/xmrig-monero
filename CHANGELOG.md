@@ -3,6 +3,17 @@
 All notable changes to this Docker packaging project are documented here.
 Each entry tracks the upstream [XMRig](https://github.com/xmrig/xmrig) version used and any packaging changes made in this repository.
 
+## [Unreleased]
+
+### Security & bug fixes
+- **BUG**: Fixed `Dockerfile.secure` silently failing to find `config.json` at runtime — xmrig resolves a relative config path against the binary's own location, and the secure variant copies the binary to `/usr/local/bin` while the config lives in `/home/xmrig`. `docker-entrypoint.sh` now injects an explicit `--config=<abs path>` unless the caller already passed `-c`/`--config`.
+
+### CI/CD
+- Added a `validate` job to `docker-build.yml` (matrix over `Dockerfile` and `Dockerfile.secure`) that builds each variant and runs `--version`, `--dry-run`, and `security-check.sh` against it on every push and pull request to `main`.
+- The push job now re-validates the exact image about to ship before tagging/pushing, and only runs on `push` events (not pull requests); it is gated on the `validate` job passing.
+- `docker-build.yml` now also triggers on pull requests to `main` for early feedback, without pushing images.
+- Pinned `snyk/actions/docker` to a commit SHA (`9adf32b...` / v1.0.0) instead of a mutable tag, matching the pinning convention already used for other actions in this repo.
+
 ## [6.26.0] - 2026-04-07
 
 ### Upstream XMRig changes

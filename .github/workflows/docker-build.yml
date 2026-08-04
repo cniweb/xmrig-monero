@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -12,21 +15,59 @@ permissions:
   attestations: write
 
 jobs:
-  docker:
+  validate:
+    name: Build & validate (${{ matrix.dockerfile }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dockerfile: [Dockerfile, Dockerfile.secure]
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
+      - name: Make scripts executable
+        run: chmod +x ./build.sh ./security-check.sh
+
+      - name: Build image (build-only, no push)
+        env:
+          DOCKERFILE: ${{ matrix.dockerfile }}
+        run: ./build.sh build-only
+
+      - name: Extract version from build.sh
+        id: get_version
+        run: |
+          VERSION=$(grep '^version=' build.sh | cut -d'"' -f2)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Extracted version: $VERSION"
+
+      - name: Validate image --version
+        run: docker run --rm "docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}" --version
+
+      - name: Validate image --dry-run
+        run: docker run --rm "docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}" --dry-run
+
+      - name: Run security-check.sh
+        run: ./security-check.sh "docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}"
+
+  docker:
+    name: Push images
+    needs: validate
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6
+
       - name: Login to DockerHub
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
         with:
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -44,6 +85,16 @@ jobs:
           VERSION=$(grep '^version=' build.sh | cut -d'"' -f2)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version: $VERSION"
+
+      - name: Validate image before push
+        run: |
+          docker run --rm "docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}" --version
+          docker run --rm "docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}" --dry-run
+
+      - name: Run security-check.sh
+        run: |
+          chmod +x ./security-check.sh
+          ./security-check.sh "docker.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}"
 
       - name: Tag Docker image with latest, version, and commit SHA
         run: |
@@ -69,8 +120,16 @@ jobs:
           docker push ghcr.io/cniweb/xmrig:${{ steps.get_version.outputs.version }}
           docker push ghcr.io/cniweb/xmrig:${{ github.sha }}
 
-          # Capture digest for attestation
-          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/cniweb/xmrig:${{ steps.get_version.outputs.version }} | cut -d'@' -f2)
+          # Capture the GHCR-specific digest for attestation/SBOM. The local
+          # image ID is shared across all tags/registries, so
+          # `.RepoDigests` can list Docker Hub's digest before GHCR's;
+          # filter explicitly for the ghcr.io repo digest instead of
+          # trusting index 0.
+          DIGEST=$(docker inspect --format='{{range .RepoDigests}}{{println .}}{{end}}' ghcr.io/cniweb/xmrig:${{ steps.get_version.outputs.version }} | grep '^ghcr.io/cniweb/xmrig@' | head -n1 | cut -d'@' -f2)
+          if [ -z "$DIGEST" ]; then
+            echo "Could not determine ghcr.io digest for cniweb/xmrig" >&2
+            exit 1
+          fi
           echo "digest=$DIGEST" >> $GITHUB_OUTPUT
 
       - name: Generate SLSA provenance attestation
@@ -78,3 +137,17 @@ jobs:
         with:
           subject-name: ghcr.io/cniweb/xmrig
           subject-digest: ${{ steps.push.outputs.digest }}
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          image: ghcr.io/cniweb/xmrig@${{ steps.push.outputs.digest }}
+          format: spdx-json
+          output-file: sbom.spdx.json
+
+      - name: Attest SBOM
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-name: ghcr.io/cniweb/xmrig
+          subject-digest: ${{ steps.push.outputs.digest }}
+          sbom-path: sbom.spdx.json
