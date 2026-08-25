@@ -3,3 +3,4 @@
 !.env.example
 !.env.randomx.example
 .DS_Store
+.DS_Store/

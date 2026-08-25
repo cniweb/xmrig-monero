@@ -37,6 +37,16 @@ Primary instruction source: `.github/copilot-instructions.md` (canonical when it
 - xmrig resolves a relative `config.json` against the binary's own path, not the working directory. `docker-entrypoint.sh` injects an explicit `--config=<abs path>` unless the caller already passed `-c`/`--config`; do not remove that shim, especially for `Dockerfile.secure` (binary at `/usr/local/bin`, config at `/home/xmrig`).
 - `.dockerignore` excludes docs, compose files, `build.sh`, and `security-check.sh`; changes there do not affect image build context.
 - The Linux compose overrides only tweak env vars: `compose.linux-msr.yaml` sets `XMRIG_NO_RDMSR=1`, and `compose.linux-hugepages.yaml` sets `XMRIG_RANDOMX_MODE=fast`.
+- Docker builds download GitHub release assets and therefore require network access. The bundled release is the static Linux x64 build; non-x86 hosts require explicit compatibility planning.
+- `./build.sh build-only` still builds and tags Docker Hub-style local tags; it does not build a registry-neutral tag. Use `docker compose config` to validate compose changes.
+- `docker-entrypoint.sh` intentionally exits when MSR or 1GB-page options are requested without the required root/device access. `--version` and `--dry-run` validate startup only, not pool connectivity or hashrate.
+- Compose `API_PORT` changes the host mapping and XMRig HTTP port; the image convention remains port `8080`.
+
+## Release checklist
+
+- Keep all six version locations synchronized: `Dockerfile`, `Dockerfile.secure`, `build.sh`, `README.md`, `SECURITY.md`, and `CHANGELOG.md`.
+- Ensure `CHANGELOG.md` contains `## [Unreleased]` before running the release workflow.
+- Recheck `security-check.sh` whenever image paths change; it assumes the standard image layout.
 
 ## CI
 
