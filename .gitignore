@@ -4,3 +4,8 @@
 !.env.randomx.example
 .DS_Store
 .DS_Store/
+
+# Local AI assistant config (not versioned)
+.claude/
+.serena/
+CLAUDE.md
